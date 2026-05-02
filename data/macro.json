@@ -1,6 +1,6 @@
 {
-  "updated": "2026-05-02T10:41:39Z",
-  "updated_ist": "02 May 2026 \u00b7 16:11 IST",
+  "updated": "2026-05-02T17:26:01Z",
+  "updated_ist": "02 May 2026 \u00b7 22:56 IST",
   "version": "3.1",
   "indicators": {
     "gdp": {
@@ -74,15 +74,15 @@
       "warning": null
     },
     "inrusd": {
-      "value": 84.3,
+      "value": 94.92,
       "unit": "\u20b9",
       "period": "02 May 2026",
       "label": "INR / USD",
-      "status": "good",
-      "badge": "STABLE",
+      "status": "warn",
+      "badge": "WEAK",
       "change": "RBI Reference Rate \u00b7 02 May 2026",
       "dir": "fl",
-      "warning": null
+      "warning": "INR at 94.92 \u2014 elevated, watch for RBI intervention"
     },
     "nifty50_lvl": {
       "value": 23997.55,
@@ -2009,7 +2009,7 @@
   },
   "flows": {
     "date": "02 May 2026",
-    "updated": "2026-05-02T10:41:45Z",
+    "updated": "2026-05-02T17:26:07Z",
     "categories": [
       {
         "category": "DII",
@@ -2048,11 +2048,6 @@
       "value": 4.98,
       "year": "2024"
     },
-    "USA": {
-      "name": "USA",
-      "value": 2.79,
-      "year": "2024"
-    },
     "EMU": {
       "name": "Eurozone",
       "value": 0.91,
@@ -2074,6 +2069,6 @@
       "year": "2024"
     }
   },
-  "regime_score": 98,
+  "regime_score": 95,
   "regime": "RISK-ON"
 }
