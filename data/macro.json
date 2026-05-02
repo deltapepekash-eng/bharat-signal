@@ -1,6 +1,6 @@
 {
-  "updated": "2026-05-02T05:16:29Z",
-  "updated_ist": "02 May 2026 \u00b7 10:46 IST",
+  "updated": "2026-05-02T05:35:06Z",
+  "updated_ist": "02 May 2026 \u00b7 11:05 IST",
   "version": "3.1",
   "indicators": {
     "gdp": {
@@ -195,57 +195,57 @@
       "warning": null
     },
     "fed_rate": {
-      "value": 4.375,
+      "value": 3.64,
       "unit": "%",
       "period": "02 May 2026",
       "label": "Fed Funds Rate",
-      "status": "warn",
-      "badge": "RESTRICTIVE",
+      "status": "good",
+      "badge": "NEUTRAL",
       "change": "On hold",
       "dir": "fl",
-      "warning": "Fed at 4.375% \u2014 limits RBI cut room"
+      "warning": null
     },
     "us10y": {
-      "value": 4.32,
+      "value": 4.4,
       "unit": "%",
       "period": "02 May 2026",
       "label": "US 10Y Treasury Yield",
       "status": "good",
       "badge": "NORMAL",
-      "change": "4.32%",
+      "change": "4.4%",
       "dir": "fl",
       "warning": null
     },
     "us_vix": {
-      "value": 28.4,
+      "value": 16.9,
       "unit": "",
       "period": "02 May 2026",
       "label": "VIX (US Fear Index)",
-      "status": "warn",
-      "badge": "ELEVATED",
-      "change": "US VIX: 28.4",
+      "status": "good",
+      "badge": "CALM",
+      "change": "US VIX: 16.9",
       "dir": "fl",
-      "warning": "US VIX 28.4 \u2014 risk-off, FII selling likely"
+      "warning": null
     },
     "us_nfp": {
-      "value": 228.0,
+      "value": 178.0,
       "unit": "K",
       "period": "02 May 2026",
       "label": "US Non-Farm Payrolls (Monthly)",
       "status": "good",
       "badge": "SOLID",
-      "change": "+228K jobs added",
+      "change": "+178K jobs added",
       "dir": "fl",
       "warning": null
     },
     "us_unemp": {
-      "value": 4.1,
+      "value": 4.3,
       "unit": "%",
       "period": "02 May 2026",
       "label": "US Unemployment Rate",
       "status": "good",
       "badge": "FULL EMPLOYMENT",
-      "change": "4.1%",
+      "change": "4.3%",
       "dir": "fl",
       "warning": null
     }
@@ -2009,7 +2009,7 @@
   },
   "flows": {
     "date": "02 May 2026",
-    "updated": "2026-05-02T05:16:35Z",
+    "updated": "2026-05-02T05:35:12Z",
     "categories": [
       {
         "category": "DII",
@@ -2074,6 +2074,6 @@
       "year": "2024"
     }
   },
-  "regime_score": 92,
+  "regime_score": 98,
   "regime": "RISK-ON"
 }
