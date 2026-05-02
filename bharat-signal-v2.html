@@ -1,0 +1,1715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BHARAT·SIGNAL — Equity Signal Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+/* ── DESIGN SYSTEM ─────────────────────────────────────────────────────────── */
+:root {
+  --bg:       #07080c;
+  --bg1:      #0c0e14;
+  --bg2:      #10131a;
+  --bg3:      #161b24;
+  --bg4:      #1c222e;
+  --bg5:      #232b3a;
+  --line:     rgba(255,255,255,0.06);
+  --line2:    rgba(255,255,255,0.10);
+  --line3:    rgba(255,255,255,0.16);
+  --ink:      #eef0f5;
+  --ink2:     #b0b8cc;
+  --ink3:     #6e7a94;
+  --ink4:     #404d64;
+  --g:        #00d68f;   /* green */
+  --g2:       rgba(0,214,143,0.10);
+  --g3:       rgba(0,214,143,0.20);
+  --r:        #ff4757;   /* red */
+  --r2:       rgba(255,71,87,0.10);
+  --a:        #ffc107;   /* amber */
+  --a2:       rgba(255,193,7,0.10);
+  --b:        #2979ff;   /* blue */
+  --b2:       rgba(41,121,255,0.12);
+  --p:        #b388ff;   /* purple */
+  --p2:       rgba(179,136,255,0.10);
+  --c:        #00e5ff;   /* cyan */
+  --c2:       rgba(0,229,255,0.10);
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+  --display: 'Bebas Neue', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--ink); font-family: var(--sans);
+       font-size: 13px; line-height: 1.5; min-height: 100vh;
+       background-image: radial-gradient(ellipse at 20% 0%, rgba(41,121,255,0.04) 0%, transparent 60%),
+                         radial-gradient(ellipse at 80% 100%, rgba(0,214,143,0.03) 0%, transparent 60%); }
+
+/* ── TOPBAR ─────────────────────────────────────────────────────────────────── */
+.topbar { display:flex; align-items:center; justify-content:space-between;
+  padding:0 28px; height:52px; border-bottom:1px solid var(--line2);
+  background:rgba(12,14,20,0.95); backdrop-filter:blur(16px);
+  position:sticky; top:0; z-index:200; }
+.logo { font-family:var(--display); font-size:22px; letter-spacing:0.08em; color:var(--ink);
+  display:flex; align-items:center; gap:8px; }
+.logo-dot { width:8px; height:8px; border-radius:50%; background:var(--g);
+  animation:pulse 2.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+.topbar-right { display:flex; align-items:center; gap:12px; }
+.live-chip { display:flex; align-items:center; gap:5px; font-family:var(--mono);
+  font-size:11px; font-weight:600; color:var(--g); background:var(--g2);
+  border:1px solid rgba(0,214,143,0.25); padding:3px 10px; border-radius:20px;
+  letter-spacing:0.05em; }
+.ts { font-family:var(--mono); font-size:11px; color:var(--ink3); }
+.tbtn { font-family:var(--mono); font-size:11px; font-weight:600;
+  padding:5px 14px; border-radius:5px; border:1px solid var(--line2);
+  cursor:pointer; transition:all .15s; letter-spacing:0.03em; }
+.tbtn-primary { background:var(--g2); color:var(--g); border-color:rgba(0,214,143,0.3); }
+.tbtn-primary:hover { background:var(--g3); }
+.tbtn-secondary { background:var(--bg3); color:var(--ink2); }
+.tbtn-secondary:hover { color:var(--ink); border-color:var(--line3); }
+.tbtn:disabled { opacity:.4; cursor:not-allowed; }
+
+/* ── SIGNAL BAR ─────────────────────────────────────────────────────────────── */
+.signal-bar { display:grid; grid-template-columns:auto 1fr auto auto auto;
+  align-items:center; gap:0; padding:0 28px; height:46px;
+  border-bottom:1px solid var(--line); background:var(--bg1); }
+.sig-label { font-family:var(--mono); font-size:10px; color:var(--ink4);
+  letter-spacing:.12em; white-space:nowrap; margin-right:16px; }
+.sig-pill { font-family:var(--display); font-size:16px; letter-spacing:0.08em;
+  padding:2px 16px; border-radius:3px; white-space:nowrap; }
+.sig-bull  { color:var(--g); background:var(--g2); border:1px solid rgba(0,214,143,0.3); }
+.sig-bear  { color:var(--r); background:var(--r2); border:1px solid rgba(255,71,87,0.3); }
+.sig-neut  { color:var(--a); background:var(--a2); border:1px solid rgba(255,193,7,0.3); }
+.sig-text  { font-size:12px; color:var(--ink3); margin-left:16px; flex:1; }
+.sig-score { font-family:var(--display); font-size:20px; letter-spacing:0.05em; margin-left:24px; }
+.sig-dots  { display:flex; gap:4px; margin-left:16px; }
+.sdot      { width:8px; height:8px; border-radius:50%; }
+
+/* ── NAV ────────────────────────────────────────────────────────────────────── */
+.nav { display:flex; padding:0 28px; background:var(--bg1);
+  border-bottom:1px solid var(--line); gap:2px; overflow-x:auto; }
+.ntab { font-family:var(--mono); font-size:11px; font-weight:600;
+  padding:10px 16px; cursor:pointer; color:var(--ink3);
+  border-bottom:2px solid transparent; transition:all .15s;
+  white-space:nowrap; letter-spacing:0.04em; }
+.ntab:hover { color:var(--ink2); }
+.ntab.on { color:var(--ink); border-bottom-color:var(--g); }
+
+/* ── MAIN LAYOUT ────────────────────────────────────────────────────────────── */
+.main { padding:24px 28px; max-width:1600px; margin:0 auto; }
+.page { display:none; } .page.on { display:block; }
+
+/* ── SECTION HEADER ─────────────────────────────────────────────────────────── */
+.sh { display:flex; align-items:center; gap:10px; margin:26px 0 14px; }
+.sh:first-child { margin-top:0; }
+.sh-label { font-family:var(--mono); font-size:10px; font-weight:600;
+  letter-spacing:.14em; color:var(--ink3); white-space:nowrap; }
+.sh-line { flex:1; height:1px; background:var(--line); }
+.sh-tag { font-family:var(--mono); font-size:10px; color:var(--ink4);
+  background:var(--bg3); padding:2px 8px; border-radius:10px; border:1px solid var(--line); }
+
+/* ── GRIDS ──────────────────────────────────────────────────────────────────── */
+.g2 { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:10px; }
+.g3 { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:10px; }
+.g4 { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:10px; }
+.g5 { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:10px; }
+
+/* ── INDICATOR CARD ─────────────────────────────────────────────────────────── */
+.ic { background:var(--bg2); border:1px solid var(--line);
+  border-radius:8px; padding:14px 16px; cursor:pointer;
+  transition:all .15s; position:relative; overflow:hidden; }
+.ic::after { content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  border-radius:2px 2px 0 0; opacity:0; transition:opacity .15s; }
+.ic:hover { border-color:var(--line2); background:var(--bg3); }
+.ic:hover::after { opacity:1; }
+.ic.good  { border-color:rgba(0,214,143,0.2); } .ic.good::after  { background:var(--g); }
+.ic.warn  { border-color:rgba(255,193,7,0.2);  } .ic.warn::after  { background:var(--a); }
+.ic.danger{ border-color:rgba(255,71,87,0.25); } .ic.danger::after{ background:var(--r); }
+.ic.lead  { border-left:3px solid var(--c); }  /* leading indicator flag */
+.ic.sel   { border-color:var(--b) !important; box-shadow:0 0 0 1px var(--b); }
+
+.ic-head  { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; }
+.ic-name  { font-size:11px; font-weight:500; color:var(--ink2); line-height:1.3;
+  flex:1; padding-right:6px; }
+.ic-badge { font-family:var(--mono); font-size:9px; font-weight:600;
+  padding:2px 6px; border-radius:3px; flex-shrink:0; white-space:nowrap; }
+.bG { background:var(--g2); color:var(--g); }
+.bR { background:var(--r2); color:var(--r); }
+.bA { background:var(--a2); color:var(--a); }
+.bB { background:var(--b2); color:var(--b); }
+.bC { background:var(--c2); color:var(--c); }
+.bP { background:var(--p2); color:var(--p); }
+
+.ic-val  { font-family:var(--mono); font-size:24px; font-weight:600;
+  color:var(--ink); line-height:1; margin-bottom:3px; }
+.ic-unit { font-size:12px; font-weight:400; color:var(--ink3); }
+.ic-row  { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.ic-chg  { font-family:var(--mono); font-size:11px; font-weight:600; }
+.up  { color:var(--g); } .dn  { color:var(--r); } .fl  { color:var(--ink3); }
+
+/* Leading indicator cyan tag */
+.lead-tag { font-family:var(--mono); font-size:9px; color:var(--c);
+  background:var(--c2); border:1px solid rgba(0,229,255,0.2);
+  padding:1px 5px; border-radius:3px; flex-shrink:0; }
+
+/* Benchmark bar */
+.bench { margin-top:6px; }
+.bench-label { font-family:var(--mono); font-size:10px; font-weight:500;
+  color:var(--ink2); margin-bottom:4px; }
+.bench-track { height:5px; background:var(--bg5); border-radius:3px;
+  position:relative; overflow:hidden; }
+.bz { position:absolute; top:0; bottom:0; }
+.bn { position:absolute; top:-4px; width:3px; height:13px;
+  background:var(--ink); border-radius:1px; transform:translateX(-50%);
+  box-shadow:0 0 4px rgba(255,255,255,0.3); }
+.ic-warn  { font-size:10px; font-weight:600; color:var(--a); margin-top:6px; }
+.ic-danger{ font-size:10px; font-weight:600; color:var(--r); margin-top:6px; }
+.ic-foot  { font-family:var(--mono); font-size:10px; color:var(--ink3); margin-top:6px; }
+
+/* ── SIGNAL BOARD CARDS (bigger, more prominent) ────────────────────────────── */
+.sc { background:var(--bg2); border:1px solid var(--line);
+  border-radius:8px; padding:18px 20px; cursor:pointer;
+  transition:all .15s; position:relative; overflow:hidden; }
+.sc::after { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+.sc.bull::after { background:linear-gradient(90deg,var(--g),rgba(0,214,143,0)); }
+.sc.bear::after { background:linear-gradient(90deg,var(--r),rgba(255,71,87,0)); }
+.sc.neut::after { background:linear-gradient(90deg,var(--a),rgba(255,193,7,0)); }
+.sc.lead-card::after { background:linear-gradient(90deg,var(--c),rgba(0,229,255,0)); }
+.sc-icon  { font-size:20px; margin-bottom:8px; }
+.sc-name  { font-size:11px; font-weight:600; color:var(--ink3);
+  letter-spacing:.04em; margin-bottom:4px; }
+.sc-val   { font-family:var(--display); font-size:34px; letter-spacing:0.04em;
+  line-height:1; margin-bottom:4px; }
+.sc-sub   { font-size:12px; color:var(--ink2); margin-bottom:10px; }
+.sc-meter { height:4px; background:var(--bg5); border-radius:2px;
+  overflow:hidden; margin-bottom:6px; }
+.sc-fill  { height:100%; border-radius:2px; transition:width .6s ease; }
+.sc-foot  { font-family:var(--mono); font-size:10px; color:var(--ink3); }
+
+/* ── YIELD CURVE CARD ───────────────────────────────────────────────────────── */
+.yc-card { background:var(--bg2); border:1px solid var(--line);
+  border-radius:8px; padding:18px 20px; }
+.yc-title { font-family:var(--mono); font-size:11px; font-weight:600;
+  color:var(--ink2); letter-spacing:.06em; margin-bottom:14px; }
+.yc-grid  { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; }
+.yc-node  { text-align:center; }
+.yc-tenor { font-family:var(--mono); font-size:9px; color:var(--ink4); margin-bottom:4px; }
+.yc-rate  { font-family:var(--mono); font-size:14px; font-weight:600; color:var(--ink); }
+.yc-bar   { height:40px; display:flex; align-items:flex-end; justify-content:center; margin-top:4px; }
+.yc-bar-fill { width:24px; border-radius:2px 2px 0 0; }
+.yc-spread{ margin-top:14px; padding-top:12px; border-top:1px solid var(--line);
+  display:flex; gap:20px; flex-wrap:wrap; }
+.yc-sp-item { font-family:var(--mono); font-size:11px; }
+.yc-sp-label { color:var(--ink3); }
+.yc-sp-val   { font-weight:600; margin-left:6px; }
+
+/* ── TABLE CARD ─────────────────────────────────────────────────────────────── */
+.tcard { background:var(--bg2); border:1px solid var(--line);
+  border-radius:8px; overflow:hidden; margin-bottom:10px; }
+.tcard-head { display:flex; align-items:center; justify-content:space-between;
+  padding:10px 16px; background:var(--bg3); border-bottom:1px solid var(--line); }
+.tcard-title { font-family:var(--mono); font-size:11px; font-weight:600;
+  color:var(--ink2); letter-spacing:.06em; }
+table { width:100%; border-collapse:collapse; }
+thead tr { background:var(--bg3); }
+th { font-family:var(--mono); font-size:10px; font-weight:600; color:var(--ink3);
+  padding:8px 14px; text-align:right; letter-spacing:.06em; border-bottom:1px solid var(--line); }
+th:first-child { text-align:left; }
+td { padding:10px 14px; text-align:right; border-bottom:1px solid var(--line);
+  font-size:13px; font-weight:500; color:var(--ink2); }
+td:first-child { text-align:left; color:var(--ink); font-weight:600; }
+tr:last-child td { border-bottom:none; }
+tr:hover td { background:var(--bg3); }
+.mono { font-family:var(--mono); }
+.pos  { color:var(--g); font-family:var(--mono); font-weight:600; }
+.neg  { color:var(--r); font-family:var(--mono); font-weight:600; }
+.neu  { color:var(--ink3); font-family:var(--mono); }
+
+/* ── CHART PANEL ────────────────────────────────────────────────────────────── */
+.chart-panel { background:var(--bg2); border:1px solid var(--line2);
+  border-radius:8px; padding:20px 24px; margin-bottom:14px; display:none; }
+.chart-panel.on { display:block; }
+.cp-head  { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; }
+.cp-title { font-family:var(--display); font-size:18px; letter-spacing:.04em; color:var(--ink); }
+.cp-sub   { font-family:var(--mono); font-size:11px; color:var(--ink3); margin-top:2px; }
+.cp-close { font-family:var(--mono); font-size:11px; color:var(--ink3);
+  background:var(--bg3); border:1px solid var(--line); padding:4px 12px;
+  border-radius:4px; cursor:pointer; }
+.cp-close:hover { color:var(--r); border-color:var(--r); }
+.cp-meta  { display:flex; gap:20px; margin-bottom:16px; flex-wrap:wrap; }
+.cp-mi    { font-family:var(--mono); font-size:11px; }
+.cp-ml    { color:var(--ink3); }
+.cp-mv    { color:var(--ink); font-weight:600; margin-left:6px; }
+.cp-mv.g  { color:var(--g); } .cp-mv.r  { color:var(--r); } .cp-mv.a  { color:var(--a); }
+.chart-wrap { height:220px; position:relative; }
+
+/* ── AI PANEL ───────────────────────────────────────────────────────────────── */
+.ai-panel { background:var(--bg2); border:1px solid rgba(41,121,255,0.3);
+  border-radius:8px; overflow:hidden; margin-top:28px; }
+.ai-head  { display:flex; align-items:center; justify-content:space-between;
+  padding:14px 20px; background:var(--b2); border-bottom:1px solid var(--line); }
+.ai-hl    { display:flex; align-items:center; gap:10px; }
+.ai-icon  { font-size:18px; }
+.ai-title { font-family:var(--display); font-size:16px; letter-spacing:.06em; color:var(--ink); }
+.ai-sub   { font-size:11px; color:var(--ink3); margin-top:1px; }
+.ai-key-row { display:flex; align-items:center; gap:8px; }
+.ai-key-label { font-family:var(--mono); font-size:10px; color:var(--ink3); }
+.ai-key-input { font-family:var(--mono); font-size:11px; background:var(--bg3);
+  border:1px solid var(--line2); color:var(--ink); padding:5px 10px;
+  border-radius:4px; width:230px; outline:none; }
+.ai-key-input:focus { border-color:var(--b); }
+.ai-run { font-family:var(--mono); font-size:11px; font-weight:600;
+  background:var(--b); color:white; border:none; padding:6px 16px;
+  border-radius:4px; cursor:pointer; transition:background .15s; }
+.ai-run:hover { background:#5c8fff; }
+.ai-run:disabled { opacity:.4; cursor:not-allowed; }
+.ai-body    { padding:20px; }
+.ai-content { font-size:13px; color:var(--ink2); line-height:1.8; }
+.ai-ph      { font-family:var(--mono); font-size:12px; color:var(--ink4);
+  text-align:center; padding:28px; line-height:1.8; }
+.ai-chips   { display:flex; gap:8px; margin-top:16px; flex-wrap:wrap; }
+.achip      { font-family:var(--mono); font-size:11px; font-weight:600;
+  padding:5px 14px; border-radius:20px; }
+.achip-buy  { background:var(--g2); color:var(--g); border:1px solid rgba(0,214,143,0.3); }
+.achip-sell { background:var(--r2); color:var(--r); border:1px solid rgba(255,71,87,0.3); }
+.achip-hold { background:var(--a2); color:var(--a); border:1px solid rgba(255,193,7,0.3); }
+.achip-neu  { background:var(--bg3); color:var(--ink2); border:1px solid var(--line2); }
+
+/* ── ALERT STRIP ────────────────────────────────────────────────────────────── */
+.alert-strip  { background:var(--bg2); border:1px solid var(--line);
+  border-radius:8px; overflow:hidden; margin-bottom:14px; }
+.alert-row    { display:flex; align-items:flex-start; gap:12px;
+  padding:11px 16px; border-bottom:1px solid var(--line); }
+.alert-row:last-child { border-bottom:none; }
+.alert-ico    { font-size:13px; flex-shrink:0; margin-top:1px; }
+.alert-text   { font-size:13px; color:var(--ink2); line-height:1.5; }
+.alert-text strong { color:var(--ink); font-weight:600; }
+.alert-tag    { font-family:var(--mono); font-size:9px; font-weight:600;
+  padding:2px 6px; border-radius:3px; margin-left:8px; vertical-align:middle; }
+
+/* ── TOAST ──────────────────────────────────────────────────────────────────── */
+.toast { position:fixed; bottom:24px; right:24px; z-index:9999;
+  font-family:var(--mono); font-size:12px; font-weight:600;
+  padding:12px 18px; border-radius:6px; max-width:340px;
+  line-height:1.5; opacity:0; transition:opacity .3s; pointer-events:none; }
+.toast.show { opacity:1; }
+
+/* ── MISC ───────────────────────────────────────────────────────────────────── */
+.spin { display:inline-block; width:12px; height:12px;
+  border:2px solid var(--bg5); border-top-color:var(--b);
+  border-radius:50%; animation:spin .7s linear infinite; vertical-align:middle; }
+@keyframes spin { to { transform:rotate(360deg); } }
+::-webkit-scrollbar { width:4px; height:4px; }
+::-webkit-scrollbar-track { background:var(--bg); }
+::-webkit-scrollbar-thumb { background:var(--bg5); border-radius:2px; }
+.data-tag { display:inline-block; font-family:var(--mono); font-size:9px; font-weight:600;
+  padding:1px 5px; border-radius:3px; vertical-align:middle; }
+.tag-live   { color:var(--g); background:var(--g2); border:1px solid rgba(0,214,143,0.25); }
+.tag-static { color:var(--ink3); background:var(--bg3); border:1px solid var(--line); }
+.tag-lead   { color:var(--c); background:var(--c2); border:1px solid rgba(0,229,255,0.2); }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo"><div class="logo-dot"></div>BHARAT·SIGNAL</div>
+  <div class="topbar-right">
+    <div class="live-chip"><div class="logo-dot" style="width:5px;height:5px;"></div>LIVE</div>
+    <span class="ts" id="ts">—</span>
+    <button class="tbtn tbtn-primary" id="fetch-btn" onclick="runFetch()">⚡ Fetch</button>
+    <button class="tbtn tbtn-secondary" onclick="renderAll()">↻ Render</button>
+  </div>
+</div>
+
+<!-- SIGNAL BAR -->
+<div class="signal-bar">
+  <span class="sig-label">SIGNAL</span>
+  <span class="sig-pill sig-neut" id="sig-pill">CAUTIOUSLY NEUTRAL</span>
+  <span class="sig-text" id="sig-text">Leading indicators mixed — watch yield curve and credit impulse</span>
+  <div class="sig-dots" id="sig-dots"></div>
+  <span class="sig-score" id="sig-score" style="color:var(--a);">54</span>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="ntab on"  onclick="showTab('signal')">⚡ SIGNAL BOARD</div>
+  <div class="ntab"     onclick="showTab('leading')">🔮 LEADING INDICATORS</div>
+  <div class="ntab"     onclick="showTab('economy')">🇮🇳 INDIA ECONOMY</div>
+  <div class="ntab"     onclick="showTab('markets')">📊 MARKETS & BREADTH</div>
+  <div class="ntab"     onclick="showTab('flows')">💰 CAPITAL FLOWS</div>
+  <div class="ntab"     onclick="showTab('global')">🌐 GLOBAL RADAR</div>
+  <div class="ntab"     onclick="showTab('earnings')">🏭 EARNINGS CYCLE</div>
+</div>
+
+<div class="main">
+
+<!-- CHART PANEL (universal) -->
+<div class="chart-panel" id="chart-panel">
+  <div class="cp-head">
+    <div><div class="cp-title" id="cp-title">—</div>
+    <div class="cp-sub" id="cp-sub">—</div></div>
+    <button class="cp-close" onclick="closeChart()">✕ Close</button>
+  </div>
+  <div class="cp-meta" id="cp-meta"></div>
+  <div class="chart-wrap"><canvas id="mainChart"></canvas></div>
+</div>
+
+<!-- ALERTS -->
+<div id="alert-wrap"></div>
+
+<!-- ═══════════════════════════════════════════════════════
+     TAB 1 · SIGNAL BOARD
+     ═══════════════════════════════════════════════════════ -->
+<div class="page on" id="tab-signal">
+
+  <div class="sh"><span class="sh-label">COMPOSITE SCORES</span><div class="sh-line"></div><span class="sh-tag">3 lenses · 15 inputs each</span></div>
+  <div class="g3" id="sec-scores"></div>
+
+  <div class="sh"><span class="sh-label">TOP LEADING SIGNALS — WHAT IS THE ECONOMY TELLING YOU RIGHT NOW?</span><div class="sh-line"></div><span class="sh-tag" style="color:var(--c);">⚡ LEADING</span></div>
+  <div class="g4" id="sec-top-leads"></div>
+
+  <div class="sh"><span class="sh-label">YIELD CURVE — INDIA G-SEC TERM STRUCTURE</span><div class="sh-line"></div></div>
+  <div id="sec-yieldcurve"></div>
+
+  <div class="sh"><span class="sh-label">MARKET INTERNALS SNAPSHOT</span><div class="sh-line"></div></div>
+  <div class="g4" id="sec-mkt-snap"></div>
+
+  <div class="sh"><span class="sh-label">EARLY WARNING PANEL</span><div class="sh-line"></div><span class="sh-tag" style="color:var(--r);">BREACH = ACT</span></div>
+  <div id="sec-warnings"></div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     TAB 2 · LEADING INDICATORS
+     ═══════════════════════════════════════════════════════ -->
+<div class="page" id="tab-leading">
+
+  <div class="sh"><span class="sh-label">CREDIT CYCLE INDICATORS</span><div class="sh-line"></div><span class="sh-tag" style="color:var(--c);">2–3Q LEAD</span></div>
+  <div class="g4" id="sec-credit-cycle"></div>
+
+  <div class="sh"><span class="sh-label">EARNINGS FORWARD INDICATORS</span><div class="sh-line"></div><span class="sh-tag" style="color:var(--c);">1–2Q LEAD</span></div>
+  <div class="g4" id="sec-earnings-lead"></div>
+
+  <div class="sh"><span class="sh-label">CAPEX & INVESTMENT CYCLE</span><div class="sh-line"></div><span class="sh-tag" style="color:var(--c);">2–4Q LEAD</span></div>
+  <div class="g4" id="sec-capex-lead"></div>
+
+  <div class="sh"><span class="sh-label">PMI SUB-INDICES — NEW ORDERS & EMPLOYMENT</span><div class="sh-line"></div><span class="sh-tag" style="color:var(--c);">1–2M LEAD</span></div>
+  <div class="g4" id="sec-pmi-sub"></div>
+
+  <div class="sh"><span class="sh-label">GLOBAL LEADING INDICATORS</span><div class="sh-line"></div><span class="sh-tag" style="color:var(--c);">2–4Q LEAD</span></div>
+  <div class="g4" id="sec-global-lead"></div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     TAB 3 · INDIA ECONOMY
+     ═══════════════════════════════════════════════════════ -->
+<div class="page" id="tab-economy">
+  <div class="sh"><span class="sh-label">GROWTH</span><div class="sh-line"></div></div>
+  <div class="g4" id="sec-growth"></div>
+  <div class="sh"><span class="sh-label">INFLATION</span><div class="sh-line"></div></div>
+  <div class="g4" id="sec-inflation"></div>
+  <div class="sh"><span class="sh-label">MONETARY POLICY — RBI</span><div class="sh-line"></div></div>
+  <div class="g4" id="sec-monetary"></div>
+  <div class="sh"><span class="sh-label">FISCAL & GOVERNMENT</span><div class="sh-line"></div></div>
+  <div class="g4" id="sec-fiscal"></div>
+  <div class="sh"><span class="sh-label">EMPLOYMENT & CONSUMPTION</span><div class="sh-line"></div></div>
+  <div class="g4" id="sec-employ"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     TAB 4 · MARKETS & BREADTH
+     ═══════════════════════════════════════════════════════ -->
+<div class="page" id="tab-markets">
+  <div class="sh"><span class="sh-label">VALUATION</span><div class="sh-line"></div></div>
+  <div class="g4" id="sec-valuation"></div>
+  <div class="sh"><span class="sh-label">MARKET BREADTH — PARTICIPATION QUALITY</span><div class="sh-line"></div><span class="sh-tag" style="color:var(--c);">LEADING</span></div>
+  <div class="g4" id="sec-breadth"></div>
+  <div class="sh"><span class="sh-label">DERIVATIVES & SENTIMENT</span><div class="sh-line"></div><span class="sh-tag" style="color:var(--c);">LEADING</span></div>
+  <div class="g4" id="sec-derivatives"></div>
+  <div class="sh"><span class="sh-label">NSE BROAD INDICES</span><div class="sh-line"></div></div>
+  <div id="sec-indices"></div>
+  <div class="sh"><span class="sh-label">NSE SECTORAL INDICES</span><div class="sh-line"></div></div>
+  <div id="sec-sectoral"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     TAB 5 · CAPITAL FLOWS
+     ═══════════════════════════════════════════════════════ -->
+<div class="page" id="tab-flows">
+  <div class="sh"><span class="sh-label">FII FLOWS — DAILY / MTD / YTD / TTM</span><div class="sh-line"></div></div>
+  <div id="sec-fii"></div>
+  <div class="sh"><span class="sh-label">DII FLOWS — DAILY / MTD / YTD / TTM</span><div class="sh-line"></div></div>
+  <div id="sec-dii"></div>
+  <div class="sh"><span class="sh-label">FII FUTURES & OPTIONS — SMART MONEY POSITIONING</span><div class="sh-line"></div><span class="sh-tag" style="color:var(--c);">LEADING</span></div>
+  <div class="g4" id="sec-fii-deriv"></div>
+  <div class="sh"><span class="sh-label">EXTERNAL SECTOR</span><div class="sh-line"></div></div>
+  <div class="g4" id="sec-external"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     TAB 6 · GLOBAL RADAR
+     ═══════════════════════════════════════════════════════ -->
+<div class="page" id="tab-global">
+  <div class="sh"><span class="sh-label">US CYCLE — MOST IMPORTANT FOR INDIA</span><div class="sh-line"></div></div>
+  <div class="g4" id="sec-us-cycle"></div>
+  <div class="sh"><span class="sh-label">US YIELD CURVE — RECESSION PREDICTOR</span><div class="sh-line"></div><span class="sh-tag" style="color:var(--c);">6–12M LEAD</span></div>
+  <div id="sec-us-yc"></div>
+  <div class="sh"><span class="sh-label">CHINA & ASIA</span><div class="sh-line"></div></div>
+  <div class="g4" id="sec-china"></div>
+  <div class="sh"><span class="sh-label">COMMODITIES & METALS</span><div class="sh-line"></div></div>
+  <div class="g5" id="sec-commodities"></div>
+  <div class="sh"><span class="sh-label">RISK & LIQUIDITY</span><div class="sh-line"></div></div>
+  <div class="g4" id="sec-risk"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     TAB 7 · EARNINGS CYCLE
+     ═══════════════════════════════════════════════════════ -->
+<div class="page" id="tab-earnings">
+  <div class="sh"><span class="sh-label">NIFTY 500 — QUARTERLY EARNINGS TRACKER</span><div class="sh-line"></div></div>
+  <div class="tcard" id="sec-qearnings"></div>
+  <div class="sh"><span class="sh-label">SECTOR EARNINGS — REVENUE & PAT GROWTH</span><div class="sh-line"></div></div>
+  <div id="sec-sector-earn"></div>
+  <div class="sh"><span class="sh-label">FORWARD ESTIMATES — FY26 & FY27 CONSENSUS</span><div class="sh-line"></div><span class="sh-tag" style="color:var(--c);">FORWARD LOOKING</span></div>
+  <div id="sec-forward-est"></div>
+</div>
+
+<!-- AI PANEL -->
+<div class="ai-panel">
+  <div class="ai-head">
+    <div class="ai-hl">
+      <span class="ai-icon">◈</span>
+      <div>
+        <div class="ai-title">SIGNAL INTELLIGENCE</div>
+        <div class="ai-sub">Groq · llama-3.3-70b · Free · Analyses all leading + coincident indicators → BUY / HOLD / EXIT</div>
+      </div>
+    </div>
+    <div class="ai-key-row">
+      <span class="ai-key-label">GROQ KEY:</span>
+      <input class="ai-key-input" id="groq-key" type="password" placeholder="gsk_..."
+        oninput="localStorage.setItem('groq_key',this.value)">
+      <button class="ai-run" id="ai-btn" onclick="runAI()">▶ Analyse</button>
+    </div>
+  </div>
+  <div class="ai-body">
+    <div id="ai-content"><div class="ai-ph">Paste your free Groq key above (console.groq.com → API Keys → free, no card)<br>then click ▶ Analyse to get a structured BUY / HOLD / EXIT signal with sector rotation calls.</div></div>
+    <div class="ai-chips" id="ai-chips" style="display:none"></div>
+  </div>
+</div>
+
+</div><!-- /main -->
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DATA MODEL
+// Every indicator has: val, unit, period, chg, dir, status, badge, badgeCls,
+//   isLead (leading indicator flag), isLive, bench, warn, bmarks, hist
+// ═══════════════════════════════════════════════════════════════════════════════
+const D = {
+
+// ── LEADING INDICATORS ────────────────────────────────────────────────────────
+yield_spread_india: {
+  name:'India Yield Curve (10Y − 1Y G-Sec)', val:0.74, unit:'%', period:'Live',
+  chg:'▼ Flattening', dir:'dn', status:'warn', badge:'FLATTENING', badgeCls:'bA',
+  isLead:true, isLive:true,
+  bench:{zones:[[20,'zone-r'],[60,'zone-g'],[20,'zone-a']],needle:50,lbl:'Steep: >1.5% | Flat: 0–1% | Inverted: <0%'},
+  warn:'Yield curve flattening — credit tightening ahead',
+  bmarks:[{l:'10Y G-Sec',v:'6.74%'},{l:'1Y T-Bill',v:'6.00%'},{l:'Spread',v:'0.74%'},{l:'Signal',v:'Flattening = caution'}],
+  hist:{l:['Apr24','Jul24','Oct24','Jan25','Apr25','Jul25','Oct25','Jan26','Apr26'],
+        v:[1.2,1.0,0.8,1.1,0.9,0.7,0.8,0.6,0.74],c:'#ffc107'},
+  leadTime:'3–6M'},
+
+credit_impulse: {
+  name:'Credit Impulse (ΔCredit Growth %)', val:1.8, unit:'%', period:'Mar 2026',
+  chg:'▼ Decelerating', dir:'dn', status:'warn', badge:'DECELERATING', badgeCls:'bA',
+  isLead:true, isLive:false,
+  bench:{zones:[[25,'zone-r'],[50,'zone-g'],[25,'zone-a']],needle:45,lbl:'Positive = tailwind | Negative = headwind'},
+  warn:'Credit impulse turning negative — GDP growth may slow in 2–3 quarters',
+  bmarks:[{l:'Bank credit YoY',v:'12.4%'},{l:'3M ago',v:'14.1%'},{l:'Impulse (change)',v:'-1.7% — negative'}],
+  hist:{l:['Apr25','Jun25','Aug25','Oct25','Dec25','Feb26','Mar26'],
+        v:[3.2,2.8,2.1,1.4,0.8,2.0,1.8],c:'#ffc107'},
+  leadTime:'2–3Q'},
+
+earnings_revision_ratio: {
+  name:'Nifty 500 Earnings Revision Ratio', val:0.84, unit:'x', period:'Apr 2026',
+  chg:'▼ Downgrades > Upgrades', dir:'dn', status:'warn', badge:'NEGATIVE', badgeCls:'bA',
+  isLead:true, isLive:false,
+  bench:{zones:[[25,'zone-r'],[40,'zone-g'],[35,'zone-a']],needle:42,lbl:'Bullish: >1.2x | Neutral: 0.8–1.2x | Bearish: <0.8x'},
+  warn:'More analyst downgrades than upgrades — earnings cycle may be peaking',
+  bmarks:[{l:'Upgrades',v:'184'},{l:'Downgrades',v:'219'},{l:'Ratio',v:'0.84x'},{l:'Signal',v:'Caution'}],
+  hist:{l:['Apr25','Jun25','Aug25','Oct25','Dec25','Feb26','Apr26'],
+        v:[1.4,1.2,1.1,0.9,0.8,0.9,0.84],c:'#ffc107'},
+  leadTime:'1–2Q'},
+
+nifty_fwd_pe: {
+  name:'Nifty 50 Forward P/E (FY27E)', val:17.8, unit:'x', period:'Apr 2026',
+  chg:'▼ Cheaper than trailing', dir:'up', status:'good', badge:'FAIR VALUE', badgeCls:'bG',
+  isLead:true, isLive:false,
+  bench:{zones:[[35,'zone-g'],[35,'zone-a'],[30,'zone-r']],needle:45,lbl:'Cheap: <16x | Fair: 16–20x | Expensive: >22x'},
+  warn:null,
+  bmarks:[{l:'FY26E EPS',v:'₹1,040'},{l:'FY27E EPS',v:'₹1,200'},{l:'FY27E growth',v:'+15.4%'},{l:'Fwd P/E',v:'17.8x — fair'}],
+  hist:{l:['Apr25','Jun25','Aug25','Oct25','Dec25','Feb26','Apr26'],
+        v:[19.2,18.4,18.1,19.8,18.9,18.1,17.8],c:'#00d68f'},
+  leadTime:'Forward 12M'},
+
+rbi_liquidity: {
+  name:'RBI System Liquidity (LAF Balance)', val:1.84, unit:'₹L Cr', period:'Apr 2026',
+  chg:'▲ Surplus improving', dir:'up', status:'good', badge:'SURPLUS', badgeCls:'bG',
+  isLead:true, isLive:true,
+  bench:{zones:[[25,'zone-r'],[50,'zone-g'],[25,'zone-a']],needle:62,lbl:'Surplus = rate cuts ahead | Deficit = tightening'},
+  warn:null,
+  bmarks:[{l:'Surplus',v:'₹1.84L Cr'},{l:'RBI target',v:'Neutral to surplus'},{l:'Signal',v:'Accommodative → equity positive'}],
+  hist:{l:['Apr25','Jun25','Aug25','Oct25','Dec25','Feb26','Apr26'],
+        v:[-0.8,-1.2,0.4,0.8,-0.6,1.2,1.84],c:'#00d68f'},
+  leadTime:'2–3M'},
+
+capacity_util: {
+  name:'RBI Capacity Utilisation Survey', val:74.1, unit:'%', period:'Q3 FY26',
+  chg:'▲ +0.8% QoQ', dir:'up', status:'warn', badge:'NEAR THRESHOLD', badgeCls:'bA',
+  isLead:true, isLive:false,
+  bench:{zones:[[30,'zone-a'],[45,'zone-g'],[25,'zone-a']],needle:57,lbl:'Capex cycle triggers above 75%'},
+  warn:'Approaching 75% — watch for capex cycle breakout in next 2 quarters',
+  bmarks:[{l:'Capex trigger',v:'>75%'},{l:'Current',v:'74.1%'},{l:'FY25 avg',v:'73.8%'},{l:'Signal',v:'Near inflection'}],
+  hist:{l:['Q1FY25','Q2FY25','Q3FY25','Q4FY25','Q1FY26','Q2FY26','Q3FY26'],
+        v:[72.4,73.1,73.8,74.2,73.5,73.3,74.1],c:'#ffc107'},
+  leadTime:'2–4Q'},
+
+pmi_new_orders: {
+  name:'India PMI New Orders Sub-Index', val:61.2, unit:'', period:'Mar 2026',
+  chg:'▲ +1.8 MoM', dir:'up', status:'good', badge:'STRONG', badgeCls:'bG',
+  isLead:true, isLive:false,
+  bench:{zones:[[20,'zone-r'],[30,'zone-a'],[50,'zone-g']],needle:75,lbl:'New orders lead production by 1–2 months'},
+  warn:null,
+  bmarks:[{l:'Headline PMI',v:'58.1'},{l:'New Orders',v:'61.2 — leads by 1–2M'},{l:'Above 55 = strong pipeline'}],
+  hist:{l:['Apr25','Jun25','Aug25','Oct25','Dec25','Feb26','Mar26'],
+        v:[58.4,60.1,57.8,59.2,58.4,59.4,61.2],c:'#00d68f'},
+  leadTime:'1–2M'},
+
+ind_yield_spread_2: {
+  name:'India–US 10Y Spread', val:2.42, unit:'%', period:'Live',
+  chg:'▲ Widening', dir:'up', status:'good', badge:'FII POSITIVE', badgeCls:'bG',
+  isLead:true, isLive:true,
+  bench:{zones:[[25,'zone-r'],[50,'zone-g'],[25,'zone-a']],needle:58,lbl:'>2.5% = FII inflows | <2% = FII outflows'},
+  warn:null,
+  bmarks:[{l:'India 10Y',v:'6.74%'},{l:'US 10Y',v:'4.32%'},{l:'Spread',v:'2.42%'},{l:'Compression risk',v:'Watch US yields'}],
+  hist:{l:['Apr25','Jun25','Aug25','Oct25','Dec25','Feb26','Apr26'],
+        v:[2.5,2.1,2.6,2.8,2.2,2.1,2.42],c:'#00d68f'},
+  leadTime:'1–3M'},
+
+us_yield_curve: {
+  name:'US Yield Curve (10Y − 2Y)', val:0.18, unit:'%', period:'Live',
+  chg:'▲ Steepening', dir:'up', status:'warn', badge:'WATCH', badgeCls:'bA',
+  isLead:true, isLive:true,
+  bench:{zones:[[20,'zone-r'],[55,'zone-a'],[25,'zone-g']],needle:48,lbl:'Positive = recovery | Negative = recession warning'},
+  warn:'Recently returned from inversion — historically precedes slowdown by 6–12M',
+  bmarks:[{l:'US 10Y',v:'4.32%'},{l:'US 2Y',v:'4.14%'},{l:'Spread',v:'+0.18%'},{l:'Post-inversion signal',v:'Recession watch'}],
+  hist:{l:['Apr24','Jul24','Oct24','Jan25','Apr25','Jul25','Oct25','Jan26','Apr26'],
+        v:[-0.35,-0.15,-0.18,0.06,0.12,0.24,0.14,0.08,0.18],c:'#ffc107'},
+  leadTime:'6–12M'},
+
+us_ism_new_orders: {
+  name:'US ISM New Orders Sub-Index', val:45.2, unit:'', period:'Mar 2026',
+  chg:'▼ -1.4 MoM', dir:'dn', status:'danger', badge:'CONTRACTION', badgeCls:'bR',
+  isLead:true, isLive:false,
+  bench:{zones:[[30,'zone-r'],[40,'zone-a'],[30,'zone-g']],needle:30,lbl:'Leads US GDP by 2 quarters — critical for IT exports'},
+  warn:'US new orders contracting — IT/export sector earnings at risk in 2–3 quarters',
+  bmarks:[{l:'Expansion threshold',v:'50'},{l:'Current',v:'45.2 — contraction'},{l:'Impact',v:'India IT revenue risk'}],
+  hist:{l:['Apr25','Jun25','Aug25','Oct25','Dec25','Feb26','Mar26'],
+        v:[52.3,49.8,47.4,46.1,51.2,46.6,45.2],c:'#ff4757'},
+  leadTime:'2Q for India IT'},
+
+fii_futures_oi: {
+  name:'FII Futures Net OI (Index F&O)', val:-18240, unit:'₹Cr', period:'Apr 2026',
+  chg:'▼ Increasing short', dir:'dn', status:'warn', badge:'NET SHORT', badgeCls:'bA',
+  isLead:true, isLive:false,
+  bench:{zones:[[30,'zone-r'],[40,'zone-a'],[30,'zone-g']],needle:35,lbl:'Net long = bullish | Net short = bearish'},
+  warn:'FII net short in index futures — institutional hedging elevated',
+  bmarks:[{l:'Net OI',v:'-₹18,240 Cr'},{l:'3M avg',v:'-₹12,000 Cr'},{l:'Signal',v:'Shorts above avg — caution'}],
+  hist:{l:['Apr25','Jun25','Aug25','Oct25','Dec25','Feb26','Apr26'],
+        v:[8200,4100,-2400,-8900,12400,6800,-18240],c:'#ffc107'},
+  leadTime:'1–4W'},
+
+pcr: {
+  name:'Options Put/Call Ratio (PCR)', val:1.18, unit:'x', period:'Live',
+  chg:'▲ Rising hedging', dir:'dn', status:'good', badge:'NEAR BOTTOM', badgeCls:'bG',
+  isLead:true, isLive:true,
+  bench:{zones:[[25,'zone-a'],[50,'zone-g'],[25,'zone-a']],needle:62,lbl:'<0.7 = greed/top | 0.7–1.2 = neutral | >1.2 = fear/bottom'},
+  warn:null,
+  bmarks:[{l:'Put volume',v:'High'},{l:'Call volume',v:'Moderate'},{l:'PCR',v:'1.18 — hedging elevated'},{l:'Contrarian signal',v:'Near bottom zone'}],
+  hist:{l:['Apr25','Jun25','Aug25','Oct25','Dec25','Feb26','Apr26'],
+        v:[0.82,0.94,1.15,0.88,0.78,0.92,1.18],c:'#00d68f'},
+  leadTime:'1–4W'},
+
+adv_decline: {
+  name:'NSE Advance/Decline Ratio (10D avg)', val:0.82, unit:'x', period:'Live',
+  chg:'▼ Breadth weak', dir:'dn', status:'warn', badge:'NARROW', badgeCls:'bA',
+  isLead:true, isLive:true,
+  bench:{zones:[[25,'zone-r'],[50,'zone-g'],[25,'zone-a']],needle:41,lbl:'>1.5 = broad rally | <0.8 = narrow/weak'},
+  warn:'Market rally is narrow — fewer stocks participating signals distribution',
+  bmarks:[{l:'10D avg A/D',v:'0.82x'},{l:'Healthy',v:'>1.5x'},{l:'Signal',v:'Index rising on narrow breadth = caution'}],
+  hist:{l:['Apr25','Jun25','Aug25','Oct25','Dec25','Feb26','Apr26'],
+        v:[1.8,1.4,1.1,1.6,1.9,1.2,0.82],c:'#ffc107'},
+  leadTime:'2–8W'},
+
+nifty_200dma: {
+  name:'Nifty 50 — % Above 200 DMA', val:6.2, unit:'%', period:'Live',
+  chg:'▼ Narrowing', dir:'dn', status:'good', badge:'ABOVE 200DMA', badgeCls:'bG',
+  isLead:false, isLive:true,
+  bench:{zones:[[20,'zone-r'],[60,'zone-g'],[20,'zone-a']],needle:58,lbl:'Above 200DMA = primary uptrend intact'},
+  warn:null,
+  bmarks:[{l:'Nifty 50',v:'23,840'},{l:'200 DMA',v:'22,450'},{l:'% above',v:'+6.2%'},{l:'Signal',v:'Primary uptrend intact'}],
+  hist:{l:['Apr25','Jun25','Aug25','Oct25','Dec25','Feb26','Apr26'],
+        v:[8.2,5.4,4.1,7.8,9.2,4.8,6.2],c:'#00d68f'},
+  leadTime:'Trend'},
+
+hi_lo_ratio: {
+  name:'NSE 52W High/Low Ratio', val:1.8, unit:'x', period:'Live',
+  chg:'▼ Fewer new highs', dir:'dn', status:'warn', badge:'NARROWING', badgeCls:'bA',
+  isLead:true, isLive:true,
+  bench:{zones:[[25,'zone-r'],[50,'zone-g'],[25,'zone-a']],needle:36,lbl:'Highs >> Lows = broad participation'},
+  warn:'52W High/Low ratio falling — fewer stocks making new highs, distribution possible',
+  bmarks:[{l:'New 52W highs',v:'82'},{l:'New 52W lows',v:'46'},{l:'Ratio',v:'1.8x (falling)'},{l:'Signal',v:'Watch for <1.0x'}],
+  hist:{l:['Apr25','Jun25','Aug25','Oct25','Dec25','Feb26','Apr26'],
+        v:[4.2,3.1,2.4,3.8,4.9,2.8,1.8],c:'#ffc107'},
+  leadTime:'2–8W'},
+
+promoter_pledge: {
+  name:'Nifty 500 Promoter Pledge %', val:6.2, unit:'%', period:'Q4 FY26',
+  chg:'▼ Declining', dir:'up', status:'good', badge:'LOW RISK', badgeCls:'bG',
+  isLead:true, isLive:false,
+  bench:{zones:[[40,'zone-g'],[40,'zone-a'],[20,'zone-r']],needle:24,lbl:'>10% = systemic risk | Rising = distress signal'},
+  warn:null,
+  bmarks:[{l:'<5%',v:'Low risk'},{l:'5–10%',v:'Watch'},{l:'>10%',v:'Danger'},{l:'Current',v:'6.2% — manageable'}],
+  hist:{l:['Q1FY25','Q2FY25','Q3FY25','Q4FY25','Q1FY26','Q2FY26','Q3FY26','Q4FY26'],
+        v:[8.1,7.8,7.2,6.9,6.8,6.5,6.4,6.2],c:'#00d68f'},
+  leadTime:'1–2Q'},
+
+mf_cash_level: {
+  name:'MF Equity Scheme Cash Level', val:4.2, unit:'%', period:'Mar 2026',
+  chg:'▲ Dry powder building', dir:'up', status:'good', badge:'SUPPORT', badgeCls:'bG',
+  isLead:true, isLive:false,
+  bench:{zones:[[25,'zone-r'],[50,'zone-g'],[25,'zone-a']],needle:55,lbl:'High cash = buying support nearby | <3% = fully deployed'},
+  warn:null,
+  bmarks:[{l:'MF AUM',v:'₹68L Cr'},{l:'Cash %',v:'4.2%'},{l:'Cash value',v:'₹2.86L Cr'},{l:'Signal',v:'Support on dips'}],
+  hist:{l:['Apr25','Jun25','Aug25','Oct25','Dec25','Feb26','Mar26'],
+        v:[3.1,3.8,4.4,3.2,2.8,3.9,4.2],c:'#00d68f'},
+  leadTime:'Tactical'},
+
+// ── INDIA ECONOMY ────────────────────────────────────────────────────────────
+gdp: {
+  name:'GDP Growth (YoY)', val:6.4, unit:'%', period:'Q3 FY26',
+  chg:'▼ -0.4% vs prev', dir:'dn', status:'good', badge:'NORMAL', badgeCls:'bG',
+  isLead:false, isLive:false,
+  bench:{zones:[[30,'zone-r'],[45,'zone-g'],[25,'zone-a']],needle:53,lbl:'Ideal: 6–8%'},
+  warn:null,
+  bmarks:[{l:'RBI FY26 est',v:'6.6%'},{l:'IMF est',v:'6.5%'},{l:'Ideal band',v:'6–8%'}],
+  hist:{l:['Q3FY24','Q4FY24','Q1FY25','Q2FY25','Q3FY25','Q4FY25','Q1FY26','Q2FY26','Q3FY26'],
+        v:[8.4,7.8,6.7,5.4,8.6,7.4,6.7,6.8,6.4],c:'#00d68f'},
+  leadTime:'Coincident'},
+
+iip: {
+  name:'IIP Growth (YoY)', val:5.2, unit:'%', period:'Feb 2026',
+  chg:'▲ +0.4% MoM', dir:'up', status:'good', badge:'HEALTHY', badgeCls:'bG',
+  isLead:false, isLive:false,
+  bench:{zones:[[25,'zone-r'],[50,'zone-g'],[25,'zone-a']],needle:52,lbl:'Healthy: 4–8%'},
+  warn:null,
+  bmarks:[{l:'FY26 avg',v:'4.8%'},{l:'Healthy',v:'4–8%'}],
+  hist:{l:['Aug25','Oct25','Dec25','Feb26'],v:[4.8,3.5,5.0,5.2],c:'#4da6ff'},
+  leadTime:'Coincident'},
+
+cpi: {
+  name:'CPI Inflation (Headline)', val:4.6, unit:'%', period:'Mar 2026',
+  chg:'▼ -0.5% MoM', dir:'dn', status:'good', badge:'IN BAND', badgeCls:'bG',
+  isLead:false, isLive:false,
+  bench:{zones:[[40,'zone-g'],[30,'zone-a'],[30,'zone-r']],needle:46,lbl:'RBI target: 4±2%'},
+  warn:null,
+  bmarks:[{l:'RBI target',v:'4%'},{l:'Band',v:'2–6%'},{l:'Core CPI',v:'4.1%'}],
+  hist:{l:['Apr25','Jun25','Aug25','Oct25','Dec25','Feb26','Mar26'],
+        v:[4.8,5.1,3.7,6.2,5.2,3.6,4.6],c:'#ffc107'},
+  leadTime:'Lagging'},
+
+cpi_food: {
+  name:'CPI Food Inflation', val:5.8, unit:'%', period:'Mar 2026',
+  chg:'▼ -0.8%', dir:'dn', status:'warn', badge:'WATCH', badgeCls:'bA',
+  isLead:false, isLive:false,
+  bench:{zones:[[40,'zone-g'],[30,'zone-a'],[30,'zone-r']],needle:58,lbl:'Target: <5%'},
+  warn:'Food inflation above 5% — rural consumption squeeze',
+  bmarks:[{l:'Target',v:'<5%'},{l:'Veg',v:'+11.4%'}],
+  hist:{l:['Apr25','Jun25','Oct25','Dec25','Mar26'],v:[7.0,8.7,10.9,8.0,5.8],c:'#ffc107'},
+  leadTime:'Lagging'},
+
+repo: {
+  name:'Repo Rate', val:5.25, unit:'%', period:'May 2026',
+  chg:'▼ CUT -25bps (series)', dir:'dn', status:'good', badge:'ACCOMMODATIVE', badgeCls:'bB',
+  isLead:false, isLive:true,
+  bench:{zones:[[30,'zone-r'],[45,'zone-g'],[25,'zone-a']],needle:60,lbl:'Neutral: 5.5–6.5%'},
+  warn:null,
+  bmarks:[{l:'Neutral est',v:'~5.0%'},{l:'Stance',v:'Accommodative'},{l:'From',v:'6.50% (Jun22) → 5.25%'}],
+  hist:{l:['Feb23','Jun23','Jun24','Oct24','Feb25','Jun25','Oct25','Feb26','May26'],v:[6.5,6.5,6.5,6.5,6.25,6.0,5.75,5.5,5.25],c:'#00d68f'},
+  leadTime:'Lagging'},
+
+gsec: {
+  name:'10Y G-Sec Yield', val:6.74, unit:'%', period:'Live',
+  chg:'▼ -8bps WoW', dir:'dn', status:'good', badge:'NORMAL', badgeCls:'bG',
+  isLead:false, isLive:true,
+  bench:{zones:[[30,'zone-g'],[45,'zone-g'],[25,'zone-a']],needle:45,lbl:'Normal: 6–8%'},
+  warn:null,
+  bmarks:[{l:'Repo spread',v:'+74bps'},{l:'Real yield',v:'+2.1%'}],
+  hist:{l:['Apr24','Oct24','Apr25','Oct25','Apr26'],v:[7.2,6.9,6.75,6.7,6.74],c:'#4da6ff'},
+  leadTime:'Coincident'},
+
+inrusd: {
+  name:'INR / USD', val:94.9, unit:'₹', period:'RBI Ref · Daily 1:30PM IST',
+  chg:'▼ -12% YoY · RBI intervening', dir:'dn', status:'warn', badge:'WEAK', badgeCls:'bA',
+  isLead:false, isLive:true,
+  bench:{zones:[[40,'zone-g'],[35,'zone-a'],[25,'zone-r']],needle:72,lbl:'RBI intervening above 95 · Watch 95–100 band'},
+  warn:null,
+  bmarks:[{l:'Source',v:'RBI Reference Rate (official)'},{l:'Current rate',v:'~94.9 (May 2026)'},{l:'1Y ago',v:'~84 (12% depreciation)'},{l:'RBI intervention',v:'Selling USD above 95'},{l:'PPP fair value',v:'~70'},{l:'Note',v:'Published daily at 1:30PM IST'}],
+  hist:{l:['Apr24','Jul24','Oct24','Jan25','Apr25','Jul25','Oct25','Jan26','Apr26'],
+        v:[83.5,83.9,84.1,86.9,84.2,85.5,84.2,91.2,94.9],c:'#ff4757'},
+  leadTime:'Coincident'},
+
+gst: {
+  name:'GST Collections', val:2.37, unit:'₹L Cr', period:'Mar 2026',
+  chg:'▲ +11.5% YoY', dir:'up', status:'good', badge:'RECORD', badgeCls:'bG',
+  isLead:false, isLive:false,
+  bench:{zones:[[40,'zone-r'],[40,'zone-g'],[20,'zone-g']],needle:79,lbl:'Strong: >₹1.5L Cr'},
+  warn:null,
+  bmarks:[{l:'FY26 avg',v:'₹1.82L Cr'},{l:'YoY',v:'+11.5%'}],
+  hist:{l:['Apr25','Jun25','Aug25','Oct25','Dec25','Feb26','Mar26'],
+        v:[1.73,1.51,1.75,1.87,1.77,1.83,2.37],c:'#00d68f'},
+  leadTime:'Coincident'},
+
+fiscal_def: {
+  name:'Fiscal Deficit', val:4.9, unit:'% GDP', period:'FY26 RE',
+  chg:'→ On target', dir:'fl', status:'warn', badge:'WATCH', badgeCls:'bA',
+  isLead:false, isLive:false,
+  bench:{zones:[[30,'zone-g'],[40,'zone-a'],[30,'zone-r']],needle:49,lbl:'Target: 5.1%'},
+  warn:'Elevated vs 3% FRBM target',
+  bmarks:[{l:'Budget target',v:'5.1%'},{l:'FRBM',v:'3%'}],
+  hist:{l:['FY20','FY22','FY24','FY25','FY26E'],v:[3.4,6.7,5.6,5.1,4.9],c:'#ffc107'},
+  leadTime:'Lagging'},
+
+cmie_unemp: {
+  name:'CMIE Unemployment Rate', val:7.9, unit:'%', period:'Mar 2026',
+  chg:'▲ Urban elevated', dir:'dn', status:'warn', badge:'ELEVATED', badgeCls:'bA',
+  isLead:false, isLive:false,
+  bench:{zones:[[30,'zone-g'],[40,'zone-a'],[30,'zone-r']],needle:53,lbl:'Target: <6%'},
+  warn:'Urban unemployment elevated — watch consumption',
+  bmarks:[{l:'Urban',v:'9.2%'},{l:'Rural',v:'7.1%'}],
+  hist:{l:['Apr25','Aug25','Dec25','Mar26'],v:[7.0,7.5,8.6,7.9],c:'#ffc107'},
+  leadTime:'Coincident'},
+
+bank_credit: {
+  name:'Bank Credit Growth (YoY)', val:12.4, unit:'%', period:'Mar 2026',
+  chg:'▼ -0.8%', dir:'dn', status:'good', badge:'HEALTHY', badgeCls:'bG',
+  isLead:false, isLive:false,
+  bench:{zones:[[25,'zone-r'],[50,'zone-g'],[25,'zone-a']],needle:62,lbl:'Healthy: 10–18%'},
+  warn:null,
+  bmarks:[{l:'Retail',v:'+16.2%'},{l:'MSME',v:'+17.4%'}],
+  hist:{l:['Apr25','Aug25','Dec25','Mar26'],v:[15.9,13.8,11.4,12.4],c:'#4da6ff'},
+  leadTime:'Coincident'},
+
+// ── MARKET / VALUATION ────────────────────────────────────────────────────────
+nifty_pe: {
+  name:'Nifty 50 Trailing P/E', val:20.4, unit:'x', period:'Live',
+  chg:'▼ -1.2x MoM', dir:'dn', status:'good', badge:'FAIR', badgeCls:'bG',
+  isLead:false, isLive:true,
+  bench:{zones:[[30,'zone-g'],[40,'zone-g'],[30,'zone-r']],needle:42,lbl:'Hist avg: 20–22x'},
+  warn:null,
+  bmarks:[{l:'10Y avg',v:'20–22x'},{l:'Peak 2021',v:'40x'},{l:'Fwd P/E',v:'17.8x'}],
+  hist:{l:['Apr24','Oct24','Apr25','Oct25','Apr26'],v:[21.0,24.1,23.5,23.0,20.4],c:'#4da6ff'},
+  leadTime:'Valuation'},
+
+nifty_pb: {
+  name:'Nifty 50 P/B Ratio', val:3.2, unit:'x', period:'Live',
+  chg:'→ Near avg', dir:'fl', status:'good', badge:'FAIR', badgeCls:'bG',
+  isLead:false, isLive:true,
+  bench:{zones:[[30,'zone-g'],[40,'zone-a'],[30,'zone-r']],needle:43,lbl:'Hist avg: 3.1x'},
+  warn:null,
+  bmarks:[{l:'10Y avg',v:'3.1x'},{l:'Peak',v:'5.1x'}],
+  hist:{l:['Apr24','Oct24','Apr25','Oct25','Apr26'],v:[3.3,3.8,3.7,3.5,3.2],c:'#a78bfa'},
+  leadTime:'Valuation'},
+
+india_vix: {
+  name:'India VIX', val:14.2, unit:'', period:'Live',
+  chg:'▼ Calm', dir:'up', status:'good', badge:'LOW FEAR', badgeCls:'bG',
+  isLead:false, isLive:true,
+  bench:{zones:[[30,'zone-g'],[40,'zone-a'],[30,'zone-r']],needle:28,lbl:'Low: <20 | High: >25'},
+  warn:null,
+  bmarks:[{l:'Low fear',v:'<20'},{l:'Panic',v:'>35'}],
+  hist:{l:['Apr24','Oct24','Apr25','Oct25','Apr26'],v:[14,17,22,18,14.2],c:'#00d68f'},
+  leadTime:'Sentiment'},
+
+eyspread: {
+  name:'Earnings Yield − G-Sec Spread', val:2.2, unit:'%', period:'Live',
+  chg:'▲ Widening', dir:'up', status:'good', badge:'BUY EQUITIES', badgeCls:'bG',
+  isLead:true, isLive:true,
+  bench:{zones:[[25,'zone-r'],[50,'zone-g'],[25,'zone-a']],needle:60,lbl:'>1% = equities attractive'},
+  warn:null,
+  bmarks:[{l:'>1%',v:'Equities attractive'},{l:'Current EY',v:'4.9%'},{l:'G-Sec',v:'6.74%'}],
+  hist:{l:['Apr24','Oct24','Apr25','Oct25','Apr26'],v:[1.6,1.5,1.4,1.6,2.2],c:'#00d68f'},
+  leadTime:'Valuation'},
+
+buffett: {
+  name:'Buffett Indicator (MCap/GDP)', val:82, unit:'%', period:'Apr 2026',
+  chg:'▼ -4% MoM', dir:'dn', status:'warn', badge:'CAUTION', badgeCls:'bA',
+  isLead:false, isLive:false,
+  bench:{zones:[[37,'zone-g'],[27,'zone-a'],[36,'zone-r']],needle:55,lbl:'Fair: 55–75%'},
+  warn:'MCap/GDP above fair value zone',
+  bmarks:[{l:'Undervalued',v:'<55%'},{l:'Fair',v:'55–75%'},{l:'Peak',v:'109% FY22'}],
+  hist:{l:['FY20','FY22','FY24','FY25','Apr26'],v:[54,109,98,117,82],c:'#ffc107'},
+  leadTime:'Valuation'},
+
+// ── GLOBAL ───────────────────────────────────────────────────────────────────
+brent: {
+  name:'Brent Crude Oil', val:74.0, unit:'$/bbl', period:'Live',
+  chg:'▼ -3.1% WoW', dir:'dn', status:'good', badge:'INDIA POSITIVE', badgeCls:'bG',
+  isLead:false, isLive:true,
+  bench:{zones:[[30,'zone-g'],[40,'zone-g'],[30,'zone-r']],needle:41,lbl:'India comfort: $60–90'},
+  warn:null,
+  bmarks:[{l:'Budget est',v:'$85'},{l:'India import',v:'~$120B/yr'}],
+  hist:{l:['Apr24','Oct24','Apr25','Oct25','Apr26'],v:[88,77,75,73,74],c:'#ffc107'},
+  leadTime:'Coincident'},
+
+gold: {
+  name:'Gold', val:3340, unit:'$/oz', period:'Live',
+  chg:'▲ +1.8% WoW', dir:'dn', status:'warn', badge:'RISK-OFF', badgeCls:'bA',
+  isLead:true, isLive:true,
+  bench:{zones:[[45,'zone-g'],[30,'zone-a'],[25,'zone-r']],needle:78,lbl:'>$2,500 = risk-off signal'},
+  warn:'Gold at record — global risk-off / USD debasement signal',
+  bmarks:[{l:'10Y avg',v:'~$1,700'},{l:'ATH',v:'$3,500 Apr\'25'}],
+  hist:{l:['Apr24','Oct24','Jan25','Apr25','Oct25','Jan26','Apr26'],
+        v:[2350,2700,2900,3100,3250,3100,3340],c:'#ffc107'},
+  leadTime:'Risk signal'},
+
+copper: {
+  name:'Copper (Dr. Copper)', val:4.62, unit:'$/lb', period:'Live',
+  chg:'▼ -2.3% MoM', dir:'dn', status:'good', badge:'GROWTH OK', badgeCls:'bG',
+  isLead:true, isLive:true,
+  bench:{zones:[[25,'zone-r'],[50,'zone-g'],[25,'zone-a']],needle:44,lbl:'Growth signal: $3.5–5.5'},
+  warn:null,
+  bmarks:[{l:'Recessionary',v:'<$3.5'},{l:'Boom',v:'>$5.5'}],
+  hist:{l:['Apr24','Oct24','Apr25','Oct25','Apr26'],v:[4.5,4.4,5.1,4.4,4.62],c:'#ffc107'},
+  leadTime:'2Q global growth'},
+
+fed_rate: {
+  name:'Fed Funds Rate', val:4.375, unit:'%', period:'Live',
+  chg:'→ On hold', dir:'fl', status:'warn', badge:'RESTRICTIVE', badgeCls:'bA',
+  isLead:false, isLive:true,
+  bench:{zones:[[28,'zone-g'],[43,'zone-g'],[29,'zone-r']],needle:63,lbl:'Neutral: ~2.5%'},
+  warn:'Fed restrictive — limits RBI cut room',
+  bmarks:[{l:'Neutral',v:'~2.5%'},{l:'Next cut est',v:'Jun/Jul 2026'}],
+  hist:{l:['Jan23','Jul23','Jan24','Jul24','Jan25','Apr26'],v:[4.5,5.25,5.25,5.25,4.5,4.375],c:'#ff4757'},
+  leadTime:'Lagging'},
+
+us10y: {
+  name:'US 10Y Treasury Yield', val:4.32, unit:'%', period:'Live',
+  chg:'▼ -12bps WoW', dir:'dn', status:'warn', badge:'WATCH', badgeCls:'bA',
+  isLead:false, isLive:true,
+  bench:{zones:[[25,'zone-g'],[50,'zone-a'],[25,'zone-r']],needle:54,lbl:'>5% = EM pressure'},
+  warn:'Elevated US yields — FII outflow pressure',
+  bmarks:[{l:'Normal',v:'2–4%'},{l:'EM pressure',v:'>5%'}],
+  hist:{l:['Apr24','Oct24','Apr25','Oct25','Apr26'],v:[4.7,4.3,4.3,4.2,4.32],c:'#ff4757'},
+  leadTime:'Coincident'},
+
+us_vix: {
+  name:'VIX (US Fear Index)', val:28.4, unit:'', period:'Live',
+  chg:'▲ +4.2 MoM', dir:'dn', status:'warn', badge:'ELEVATED', badgeCls:'bA',
+  isLead:false, isLive:true,
+  bench:{zones:[[28,'zone-g'],[35,'zone-a'],[37,'zone-r']],needle:47,lbl:'Normal: <20'},
+  warn:'US VIX >25 — risk-off, FII selling likely',
+  bmarks:[{l:'Normal',v:'<20'},{l:'Panic',v:'>40'}],
+  hist:{l:['Apr24','Oct24','Apr25','Oct25','Apr26'],v:[15,21,52,20,28.4],c:'#ff4757'},
+  leadTime:'Sentiment'},
+
+dxy: {
+  name:'US Dollar Index (DXY)', val:99.1, unit:'', period:'Live',
+  chg:'▼ -1.4% MoM', dir:'dn', status:'good', badge:'EM POSITIVE', badgeCls:'bG',
+  isLead:false, isLive:true,
+  bench:{zones:[[30,'zone-r'],[40,'zone-g'],[30,'zone-a']],needle:48,lbl:'EM comfort: 95–105'},
+  warn:null,
+  bmarks:[{l:'EM comfort',v:'95–105'},{l:'FII trigger',v:'<100'}],
+  hist:{l:['Apr24','Oct24','Apr25','Oct25','Apr26'],v:[104,103,104,104,99.1],c:'#4da6ff'},
+  leadTime:'Coincident'},
+
+pmi_india: {
+  name:'India Composite PMI', val:58.5, unit:'', period:'Mar 2026',
+  chg:'▲ +0.6 MoM', dir:'up', status:'good', badge:'STRONG', badgeCls:'bG',
+  isLead:false, isLive:false,
+  bench:{zones:[[20,'zone-r'],[30,'zone-a'],[50,'zone-g']],needle:74,lbl:'Expansion: >50'},
+  warn:null,
+  bmarks:[{l:'Mfg',v:'58.1'},{l:'Services',v:'59.0'},{l:'Composite',v:'58.5'}],
+  hist:{l:['Apr25','Aug25','Dec25','Mar26'],v:[59.8,57.8,58.2,58.5],c:'#00d68f'},
+  leadTime:'1M'},
+
+pmi_us: {
+  name:'US ISM Manufacturing PMI', val:49.0, unit:'', period:'Mar 2026',
+  chg:'▼ -0.9 MoM', dir:'dn', status:'warn', badge:'CONTRACTION', badgeCls:'bA',
+  isLead:false, isLive:false,
+  bench:{zones:[[20,'zone-r'],[30,'zone-g'],[50,'zone-g']],needle:45,lbl:'Expansion: >50'},
+  warn:'US mfg contracting — global slowdown risk for India exports',
+  bmarks:[{l:'Expansion',v:'>50'},{l:'Recession',v:'<45 for 6M'}],
+  hist:{l:['Apr25','Aug25','Dec25','Mar26'],v:[49.2,47.2,49.3,49.0],c:'#ff4757'},
+  leadTime:'Coincident'},
+
+// ── FII/DII FLOWS ────────────────────────────────────────────────────────────
+};
+
+const FII_ROWS = [
+  {name:'FII Equity',  daily:'+₹812 Cr',  mtd:'-₹4,210 Cr', ytd:'-₹18,240 Cr', ttm:'+₹8,450 Cr',
+   daily_n:812, mtd_n:-4210, cls_d:'up',cls_m:'dn',cls_y:'dn',cls_t:'up'},
+  {name:'FII Debt',    daily:'+₹210 Cr',  mtd:'+₹2,100 Cr', ytd:'+₹4,850 Cr',  ttm:'+₹22,100 Cr',
+   daily_n:210, mtd_n:2100,  cls_d:'up',cls_m:'up',cls_y:'up',cls_t:'up'},
+  {name:'FII Hybrid',  daily:'-₹45 Cr',   mtd:'-₹320 Cr',   ytd:'-₹1,120 Cr',  ttm:'-₹2,840 Cr',
+   daily_n:-45, mtd_n:-320,  cls_d:'dn',cls_m:'dn',cls_y:'dn',cls_t:'dn'},
+  {name:'FII TOTAL',   daily:'+₹977 Cr',  mtd:'-₹2,430 Cr', ytd:'-₹14,510 Cr', ttm:'+₹27,710 Cr',
+   daily_n:977, mtd_n:-2430, cls_d:'up',cls_m:'dn',cls_y:'dn',cls_t:'up', isTot:true},
+];
+const DII_ROWS = [
+  {name:'MF Equity',   daily:'+₹2,840 Cr',mtd:'+₹9,870 Cr', ytd:'+₹58,240 Cr', ttm:'₹1.14L Cr',
+   daily_n:2840,mtd_n:9870,  cls_d:'up',cls_m:'up',cls_y:'up',cls_t:'up'},
+  {name:'LIC/Insur',   daily:'+₹810 Cr',  mtd:'+₹3,240 Cr', ytd:'+₹18,100 Cr', ttm:'₹38,400 Cr',
+   daily_n:810, mtd_n:3240,  cls_d:'up',cls_m:'up',cls_y:'up',cls_t:'up'},
+  {name:'SIP Flows',   daily:'—',          mtd:'₹25,926 Cr', ytd:'₹2.08L Cr',   ttm:'₹2.42L Cr',
+   daily_n:0,   mtd_n:25926, cls_d:'fl',cls_m:'up',cls_y:'up',cls_t:'up'},
+  {name:'Banks/Other', daily:'+₹320 Cr',  mtd:'+₹1,120 Cr', ytd:'+₹8,480 Cr',  ttm:'₹16,200 Cr',
+   daily_n:320, mtd_n:1120,  cls_d:'up',cls_m:'up',cls_y:'up',cls_t:'up'},
+  {name:'DII TOTAL',   daily:'+₹3,970 Cr',mtd:'₹14,230 Cr', ytd:'₹2.87L Cr',   ttm:'₹4.10L Cr',
+   daily_n:3970,mtd_n:14230, cls_d:'up',cls_m:'up',cls_y:'up',cls_t:'up', isTot:true},
+];
+
+// ── EARNINGS DATA — Rolling window, updated via macro.json ──────────────────
+// Add new quarters here as results are announced. Dashboard always shows last 5Q + TTM.
+// To add a new quarter: push a new object to EARNINGS_DB and re-deploy index.html
+// OR update via macro.json (earnings key) from the fetcher
+
+const EARNINGS_DB = [
+  // Format: {q, fy, qnum, sales (₹L Cr), pat, salesYoy, salesQoq, patYoy, patQoq, margin, announced}
+  {q:'Q1 FY25', fy:25, qnum:1, sales:38.4, pat:4.12, salesYoy:'+9.1%', salesQoq:'-2.3%', patYoy:'+14.2%', patQoq:'-5.1%', margin:'10.7%', announced:true},
+  {q:'Q2 FY25', fy:25, qnum:2, sales:40.2, pat:4.45, salesYoy:'+8.4%', salesQoq:'+4.7%', patYoy:'+18.1%', patQoq:'+8.0%', margin:'11.1%', announced:true},
+  {q:'Q3 FY25', fy:25, qnum:3, sales:41.8, pat:4.68, salesYoy:'+7.8%', salesQoq:'+4.0%', patYoy:'+15.3%', patQoq:'+5.2%', margin:'11.2%', announced:true},
+  {q:'Q4 FY25', fy:25, qnum:4, sales:43.5, pat:4.95, salesYoy:'+8.9%', salesQoq:'+4.1%', patYoy:'+16.8%', patQoq:'+5.8%', margin:'11.4%', announced:true},
+  {q:'Q1 FY26', fy:26, qnum:1, sales:42.1, pat:4.72, salesYoy:'+9.6%', salesQoq:'-3.2%', patYoy:'+14.6%', patQoq:'-4.6%', margin:'11.2%', announced:true},
+  {q:'Q2 FY26', fy:26, qnum:2, sales:44.3, pat:5.04, salesYoy:'+10.2%',salesQoq:'+5.2%', patYoy:'+13.3%', patQoq:'+6.8%', margin:'11.4%', announced:true},
+  {q:'Q3 FY26', fy:26, qnum:3, sales:46.1, pat:5.24, salesYoy:'+10.3%',salesQoq:'+4.1%', patYoy:'+11.9%', patQoq:'+4.0%', margin:'11.4%', announced:true},
+  // ── ADD NEW QUARTERS BELOW AS THEY ARE ANNOUNCED ──────────────────────────
+  // {q:'Q4 FY26', fy:26, qnum:4, sales:XX, pat:XX, salesYoy:'XX', salesQoq:'XX', patYoy:'XX', patQoq:'XX', margin:'XX', announced:false},
+];
+
+// Rolling window: always last 5 announced quarters + TTM
+function getEarningsDisplay() {
+  const announced = EARNINGS_DB.filter(e => e.announced);
+  const last5 = announced.slice(-5);
+  const ttmPat = announced.slice(-4).reduce((s,e) => s + e.pat, 0);
+  const ttmSales = announced.slice(-4).reduce((s,e) => s + e.sales, 0);
+  const ttmPatYoy = announced.length >= 8
+    ? ((ttmPat / announced.slice(-8,-4).reduce((s,e)=>s+e.pat,0) - 1)*100).toFixed(1)+'%' : '+13.1%';
+  const ttmSalesYoy = announced.length >= 8
+    ? ((ttmSales / announced.slice(-8,-4).reduce((s,e)=>s+e.sales,0) - 1)*100).toFixed(1)+'%' : '+9.9%';
+  const ttmMargin = (ttmPat / ttmSales * 100).toFixed(1)+'%';
+  return [
+    ...last5,
+    {q:'TTM', sales:+ttmSales.toFixed(0), pat:+ttmPat.toFixed(2),
+     salesYoy:ttmSalesYoy, salesQoq:'—', patYoy:ttmPatYoy, patQoq:'—', margin:ttmMargin, announced:true}
+  ];
+}
+
+// ── FORWARD ESTIMATES — Dynamic fiscal year labels ────────────────────────────
+// Labels auto-update based on current month: Apr–Mar = Indian FY
+function getForwardFYLabels() {
+  const now = new Date();
+  const month = now.getMonth() + 1; // 1=Jan
+  // Indian FY: Apr(4) to Mar(3). If month is Jan-Mar, we're in the previous FY
+  const calYear = now.getFullYear();
+  const currentFY = month >= 4 ? (calYear + 1) : calYear; // FY ends in Mar of this year
+  // e.g. May 2026 → FY27 (Apr26–Mar27), so currentFY=27, nextFY=28
+  const fyNum = currentFY - 2000; // e.g. 27
+  return {
+    cy:  `FY${fyNum}E`,   // current forward year
+    ny:  `FY${fyNum+1}E`, // next forward year
+    cyFull: `FY${fyNum} (Apr ${calYear}–Mar ${calYear+1})`,
+  };
+}
+
+// Forward estimates — update consensus figures here annually
+const FORWARD_DATA = [
+  {metric:'Nifty 500 Revenue Growth', cy:'+10.5%', ny:'+12.2%', consensus:'Positive', risk:'Global slowdown'},
+  {metric:'Nifty 500 PAT Growth',     cy:'+14.2%', ny:'+16.8%', consensus:'Positive', risk:'Margin compression'},
+  {metric:'Nifty 50 EPS (₹)',         cy:'₹1,040', ny:'₹1,200', consensus:'Upgrade',  risk:'Input costs'},
+  {metric:'Nifty 50 Forward P/E',     cy:'19.2x',  ny:'17.8x',  consensus:'Fair',     risk:'Rate sensitivity'},
+  {metric:'Banking NIM',              cy:'3.2%',   ny:'3.0%',   consensus:'Compressing',risk:'Rate cuts'},
+  {metric:'IT USD Revenue Growth',    cy:'+4.8%',  ny:'+8.2%',  consensus:'Recovery', risk:'US ISM weakness'},
+  {metric:'Auto Volume Growth',       cy:'+8.4%',  ny:'+10.2%', consensus:'Positive', risk:'EV transition'},
+  {metric:'Capex/Infra Revenue',      cy:'+18.4%', ny:'+22.1%', consensus:'Strong',   risk:'Execution'},
+];
+
+// ── INDIA YIELD CURVE DATA ────────────────────────────────────────────────────
+const YIELD_CURVE = {
+  india: [
+    {tenor:'3M', rate:5.82, label:'3M T-Bill'},
+    {tenor:'6M', rate:5.94, label:'6M T-Bill'},
+    {tenor:'1Y', rate:6.00, label:'1Y T-Bill'},
+    {tenor:'2Y', rate:6.18, label:'2Y G-Sec'},
+    {tenor:'3Y', rate:6.35, label:'3Y G-Sec'},
+    {tenor:'5Y', rate:6.52, label:'5Y G-Sec'},
+    {tenor:'7Y', rate:6.62, label:'7Y G-Sec'},
+    {tenor:'10Y',rate:6.74, label:'10Y G-Sec'},
+    {tenor:'14Y',rate:6.78, label:'14Y G-Sec'},
+    {tenor:'30Y',rate:6.86, label:'30Y G-Sec'},
+  ],
+  us: [
+    {tenor:'3M', rate:5.24},{tenor:'6M', rate:5.10},{tenor:'1Y', rate:4.89},
+    {tenor:'2Y', rate:4.14},{tenor:'3Y', rate:4.10},{tenor:'5Y', rate:4.18},
+    {tenor:'7Y', rate:4.24},{tenor:'10Y',rate:4.32},{tenor:'20Y',rate:4.65},{tenor:'30Y',rate:4.72},
+  ]
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RENDER ENGINE
+// ═══════════════════════════════════════════════════════════════════════════════
+let activeChart = null, chartInst = null;
+
+function mkCard(d) {
+  if (!d) return '<div class="ic good"></div>';
+  const chgCls = d.dir==='up'?'up':d.dir==='dn'?'dn':'fl';
+  const zones  = (d.bench.zones||[]).map(([w,cls])=>
+    `<div class="bz ${cls}" style="width:${w}%;height:100%;"></div>`).join('');
+  const needle = Math.min(97, Math.max(3, d.bench.needle||50));
+  const warnHtml = d.warn ? `<div class="ic-${d.status==='danger'?'danger':'warn'}">⚠ ${d.warn}</div>` : '';
+  const leadTag  = d.isLead ? `<span class="lead-tag">⚡ LEADING</span>` : '';
+  const liveTag  = d.isLive ? `<span class="data-tag tag-live">LIVE</span>` : `<span class="data-tag tag-static">${d.period}</span>`;
+  const selCls   = activeChart === d.name ? 'sel' : '';
+  const leadCls  = d.isLead ? 'lead' : '';
+  return `<div class="ic ${d.status} ${selCls} ${leadCls}" onclick="openChart('${d.name.replace(/'/g,"\\'")}')">
+    <div class="ic-head">
+      <span class="ic-name">${d.name}</span>
+      <span class="ic-badge ${d.badgeCls}">${d.badge}</span>
+    </div>
+    <div class="ic-val">${d.val}<span class="ic-unit"> ${d.unit}</span></div>
+    <div class="ic-row">
+      <span class="ic-chg ${chgCls}">${d.chg}</span>
+      ${liveTag} ${leadTag}
+    </div>
+    <div class="bench">
+      <div class="bench-label">${d.bench.lbl}</div>
+      <div class="bench-track">
+        <div style="position:absolute;inset:0;display:flex;">${zones}</div>
+        <div class="bn" style="left:${needle}%"></div>
+      </div>
+    </div>
+    ${warnHtml}
+    <div class="ic-foot">↗ Click for trend · Lead: ${d.leadTime||'—'}</div>
+  </div>`;
+}
+
+function fill(id, keys) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = keys.map(k => mkCard(D[k])).join('');
+}
+
+// ── COMPOSITE SCORES ─────────────────────────────────────────────────────────
+function computeScores() {
+  const leading  = ['yield_spread_india','credit_impulse','earnings_revision_ratio','nifty_fwd_pe',
+                    'rbi_liquidity','pmi_new_orders','ind_yield_spread_2','pcr','adv_decline','mf_cash_level'];
+  const coincident = ['gdp','iip','cpi','repo','gsec','gst','bank_credit','pmi_india','inrusd','brent'];
+  const sentiment  = ['india_vix','us_vix','fii_futures_oi','nifty_200dma','hi_lo_ratio',
+                      'promoter_pledge','gold','adv_decline','pcr','eyspread'];
+
+  const score = (keys) => {
+    const vals = keys.map(k => D[k]?.status).filter(Boolean);
+    const g = vals.filter(s=>s==='good').length;
+    const w = vals.filter(s=>s==='warn').length;
+    return Math.round((g + w*0.5) / vals.length * 100);
+  };
+
+  return {
+    leading:   score(leading),
+    coincident:score(coincident),
+    sentiment: score(sentiment),
+  };
+}
+
+function renderScores() {
+  const s = computeScores();
+  const el = document.getElementById('sec-scores');
+  const pill = (v) => v>=70?['bull','BUY / ACCUMULATE','var(--g)','#0d2e1e']:
+                       v>=50?['neut','CAUTIOUS / HOLD','var(--a)','#2e2200']:
+                             ['bear','EXIT / REDUCE','var(--r)','#2e0808'];
+
+  const mkScore = (title, icon, val, desc, keys) => {
+    const [cls,sig,clr,bg] = pill(val);
+    return `<div class="sc ${cls}" onclick="void(0)" style="background:${bg}18;border-color:${clr}30;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-family:var(--mono);font-size:10px;color:var(--ink3);letter-spacing:.08em;">${icon} ${title}</span>
+        <span class="ic-badge ${cls==='bull'?'bG':cls==='bear'?'bR':'bA'}">${sig}</span>
+      </div>
+      <div style="font-family:var(--display);font-size:48px;color:${clr};line-height:1;margin-bottom:4px;">${val}<span style="font-family:var(--mono);font-size:14px;color:var(--ink3);">/100</span></div>
+      <div style="font-size:12px;color:var(--ink2);margin-bottom:12px;">${desc}</div>
+      <div class="sc-meter"><div class="sc-fill" style="width:${val}%;background:${clr};"></div></div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--ink3);">${keys.length} inputs · ${keys.filter(k=>D[k]?.status==='good').length} green · ${keys.filter(k=>D[k]?.status==='warn').length} amber · ${keys.filter(k=>D[k]?.status==='danger').length} red</div>
+    </div>`;
+  };
+
+  el.innerHTML =
+    mkScore('LEADING INDICATOR SCORE','🔮',s.leading,'Predictive — 1–4 quarters ahead',
+      ['yield_spread_india','credit_impulse','earnings_revision_ratio','nifty_fwd_pe','rbi_liquidity','pmi_new_orders','ind_yield_spread_2','pcr','adv_decline','mf_cash_level']) +
+    mkScore('COINCIDENT ECONOMY SCORE','📊',s.coincident,'Current state of the economy',
+      ['gdp','iip','cpi','repo','gsec','gst','bank_credit','pmi_india','inrusd','brent']) +
+    mkScore('MARKET SENTIMENT SCORE','😊',s.sentiment,'Investor psychology & positioning',
+      ['india_vix','us_vix','fii_futures_oi','nifty_200dma','hi_lo_ratio','promoter_pledge','gold','adv_decline','pcr','eyspread']);
+
+  // Update global signal bar
+  const overall = Math.round((s.leading + s.coincident + s.sentiment) / 3);
+  const [cls,sig] = pill(overall);
+  document.getElementById('sig-score').textContent = overall;
+  document.getElementById('sig-score').style.color =
+    cls==='bull'?'var(--g)':cls==='bear'?'var(--r)':'var(--a)';
+  const pill_el = document.getElementById('sig-pill');
+  pill_el.textContent = sig;
+  pill_el.className = `sig-pill sig-${cls==='bull'?'bull':cls==='bear'?'bear':'neut'}`;
+  document.getElementById('sig-text').textContent =
+    cls==='bull' ? 'Leading indicators positive — macro supports equity accumulation' :
+    cls==='bear' ? 'Multiple warning signals — reduce risk, protect capital' :
+                   'Mixed signals — selective; focus on high-quality names';
+
+  // Score dots
+  const allKeys = Object.keys(D).slice(0,20);
+  document.getElementById('sig-dots').innerHTML =
+    allKeys.map(k=>`<div class="sdot" style="background:${D[k]?.status==='good'?'var(--g)':D[k]?.status==='warn'?'var(--a)':'var(--r)'}" title="${D[k]?.name||k}"></div>`).join('');
+}
+
+// ── YIELD CURVE ───────────────────────────────────────────────────────────────
+function renderYieldCurve() {
+  const el = document.getElementById('sec-yieldcurve');
+  if (!el) return;
+  const maxRate = 7.2;
+  const minRate = 5.6;
+
+  const nodes = YIELD_CURVE.india.map(p => {
+    const pct = Math.round((p.rate - minRate) / (maxRate - minRate) * 100);
+    const h   = Math.max(8, Math.round(pct * 0.5));
+    const clr = p.rate < 6.1 ? 'var(--b)' : p.rate < 6.5 ? 'var(--g)' : 'var(--a)';
+    return `<div class="yc-node">
+      <div class="yc-tenor">${p.tenor}</div>
+      <div class="yc-rate" style="color:${clr};">${p.rate}</div>
+      <div class="yc-bar"><div class="yc-bar-fill" style="height:${h}px;background:${clr};opacity:0.7;"></div></div>
+    </div>`;
+  }).join('');
+
+  const ind10_1 = (YIELD_CURVE.india[7].rate - YIELD_CURVE.india[2].rate).toFixed(2);
+  const us10_2  = (YIELD_CURVE.us[7].rate  - YIELD_CURVE.us[3].rate).toFixed(2);
+  const ind_us  = (YIELD_CURVE.india[7].rate - YIELD_CURVE.us[7].rate).toFixed(2);
+  const s10_2c  = parseFloat(us10_2) > 0 ? 'pos' : 'neg';
+  const s10_1c  = parseFloat(ind10_1) > 1 ? 'pos' : parseFloat(ind10_1) > 0 ? 'neu' : 'neg';
+
+  el.innerHTML = `<div class="yc-card">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div>
+        <div class="yc-title">🇮🇳 India G-Sec Yield Curve</div>
+        <div class="yc-grid">${nodes}</div>
+      </div>
+      <div>
+        <div class="yc-title">Key Spreads & Signals</div>
+        <div class="yc-spread">
+          <div class="yc-sp-item">
+            <span class="yc-sp-label">India 10Y−1Y spread</span>
+            <span class="yc-sp-val ${s10_1c}">${ind10_1}%</span>
+            <span style="font-family:var(--mono);font-size:10px;color:var(--ink3);margin-left:6px;">${parseFloat(ind10_1)>1?'Normal':parseFloat(ind10_1)>0.3?'Flattening':'⚠ FLAT/INVERTED'}</span>
+          </div>
+          <div class="yc-sp-item">
+            <span class="yc-sp-label">US 10Y−2Y spread</span>
+            <span class="yc-sp-val ${s10_2c}">${us10_2}%</span>
+            <span style="font-family:var(--mono);font-size:10px;color:var(--ink3);margin-left:6px;">${parseFloat(us10_2)>0.5?'Normal':parseFloat(us10_2)>0?'Post-inversion':'⚠ INVERTED'}</span>
+          </div>
+          <div class="yc-sp-item">
+            <span class="yc-sp-label">India−US 10Y spread</span>
+            <span class="yc-sp-val ${parseFloat(ind_us)>2.5?'pos':'neu'}">${ind_us}%</span>
+            <span style="font-family:var(--mono);font-size:10px;color:var(--ink3);margin-left:6px;">${parseFloat(ind_us)>2.5?'FII positive':parseFloat(ind_us)>2?'Neutral':'FII outflow risk'}</span>
+          </div>
+        </div>
+        <div style="margin-top:14px;padding:12px;background:var(--bg3);border-radius:6px;border:1px solid var(--line);">
+          <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:var(--ink2);margin-bottom:8px;">HOW TO READ THE YIELD CURVE</div>
+          <div style="font-size:12px;color:var(--ink2);line-height:1.7;">
+            <strong>Steep curve (10Y >> 1Y)</strong> → banks profit, credit grows → equity bullish<br>
+            <strong>Flat curve</strong> → credit tightening ahead → caution<br>
+            <strong>Inverted (1Y > 10Y)</strong> → recession predictor with 6–12M lead<br>
+            <strong>US curve post-inversion</strong> → historically precedes slowdown; watch closely
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── FLOW TABLE ────────────────────────────────────────────────────────────────
+function renderFlowTable(rows, title, icon, elId) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const cc = (cls) => cls==='up'?'var(--g)':cls==='dn'?'var(--r)':'var(--ink3)';
+  let html = `<div class="tcard" style="margin-bottom:10px;">
+    <div class="tcard-head">
+      <span class="tcard-title">${icon} ${title}</span>
+      <span style="font-family:var(--mono);font-size:10px;color:var(--ink3);" id="${elId}-date">NSE Provisional · <span class="data-tag tag-live">LIVE</span></span>
+    </div>
+    <table>
+      <thead><tr>
+        <th>Category</th><th>Daily</th><th>MTD</th><th>YTD</th>
+        <th style="border-left:1px solid var(--line);">TTM (12M)</th><th>Signal</th>
+      </tr></thead><tbody>`;
+  rows.forEach(r => {
+    const bg = r.isTot ? 'background:var(--bg4);' : '';
+    const sigCls = r.cls_m==='up'?'bG':r.cls_m==='dn'?'bR':'bA';
+    const sigTxt = r.cls_m==='up'?'▲ BUYING':r.cls_m==='dn'?'▼ SELLING':'→ NEUTRAL';
+    html += `<tr style="${bg}">
+      <td>${r.name}</td>
+      <td class="mono" style="color:${cc(r.cls_d)};font-weight:700;">${r.daily}</td>
+      <td class="mono" style="color:${cc(r.cls_m)};font-weight:700;">${r.mtd}</td>
+      <td class="mono" style="color:${cc(r.cls_y)};font-weight:700;">${r.ytd}</td>
+      <td class="mono" style="color:${cc(r.cls_t)};font-weight:700;border-left:1px solid var(--line);">${r.ttm}</td>
+      <td><span class="ic-badge ${sigCls}">${sigTxt}</span></td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+}
+
+// ── EARNINGS TABLES ───────────────────────────────────────────────────────────
+function renderEarnings() {
+  const el = document.getElementById('sec-qearnings');
+  if (!el) return;
+  const gc = v => v==='—'?'neu':v.startsWith('+')?'pos':'neg';
+  const rows = getEarningsDisplay();
+  const announced = EARNINGS_DB.filter(e => e.announced);
+  const lastQ = announced[announced.length - 1];
+  const nextQ = (() => {
+    const {fy, qnum} = lastQ;
+    return qnum === 4 ? `Q1 FY${fy+1}` : `Q${qnum+1} FY${fy}`;
+  })();
+  // How to add a new quarter — inline instructions
+  const addNote = `<div style="padding:10px 16px;background:var(--bg3);border-top:1px solid var(--line);
+    font-family:var(--mono);font-size:10px;color:var(--ink3);line-height:1.7;">
+    <strong style="color:var(--ink2);">ROLLING WINDOW</strong> · Always shows last 5 quarters + TTM ·
+    Last updated: <strong style="color:var(--ink2);">${lastQ.q}</strong> ·
+    Next quarter to add: <strong style="color:var(--a);">${nextQ}</strong> results expected
+    ~May/Jun 2026 · To update: add new row to EARNINGS_DB in index.html and re-deploy
+  </div>`;
+  let html2 = `<div class="tcard-head" style="justify-content:space-between;">
+    <span class="tcard-title">📋 NIFTY 500 AGGREGATE — QUARTERLY (₹L Cr)</span>
+    <span style="font-family:var(--mono);font-size:10px;color:var(--ink3);">
+      Showing: ${rows.length - 1} quarters + TTM · Rolling window auto-updates
+    </span>
+  </div>
+  <table><thead><tr>
+    <th>Quarter</th><th>Revenue</th><th>PAT</th><th>Net Margin</th>
+    <th>Rev YoY</th><th>Rev QoQ</th><th>PAT YoY</th><th>PAT QoQ</th>
+  </tr></thead><tbody>`;
+  rows.forEach(e => {
+    const bg = e.q==='TTM' ? 'background:var(--bg4);' : '';
+    html2 += `<tr style="${bg}">
+      <td>${e.q}</td>
+      <td class="mono">${e.sales}</td><td class="mono">${e.pat}</td>
+      <td class="mono">${e.margin}</td>
+      <td class="${gc(e.salesYoy)}">${e.salesYoy}</td>
+      <td class="${gc(e.salesQoq)}">${e.salesQoq}</td>
+      <td class="${gc(e.patYoy)}">${e.patYoy}</td>
+      <td class="${gc(e.patQoq)}">${e.patQoq}</td>
+    </tr>`;
+  });
+  html2 += `</tbody></table>${addNote}`;
+  el.innerHTML = html2;
+}
+
+function renderForward() {
+  const el = document.getElementById('sec-forward-est');
+  if (!el) return;
+  const fy = getForwardFYLabels();
+  const now = new Date();
+  const updMonth = now.toLocaleDateString('en-IN',{month:'short',year:'numeric'});
+  let html = `<div class="tcard"><div class="tcard-head" style="justify-content:space-between;">
+    <span class="tcard-title">📈 CONSENSUS FORWARD ESTIMATES — ${fy.cy} & ${fy.ny}</span>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="data-tag tag-lead">FORWARD LOOKING</span>
+      <span style="font-family:var(--mono);font-size:10px;color:var(--ink3);">Labels auto-update each FY · Last edited: ${updMonth}</span>
+    </div>
+  </div>
+  <table><thead><tr>
+    <th>Metric</th><th>${fy.cy}</th><th>${fy.ny}</th><th>Consensus View</th><th>Key Risk</th>
+  </tr></thead><tbody>`;
+  FORWARD_DATA.forEach(r => {
+    const cls = ['Positive','Upgrade','Strong','Recovery'].includes(r.consensus)?'pos':
+                r.consensus==='Compressing'?'neg':'neu';
+    html += `<tr>
+      <td>${r.metric}</td>
+      <td class="mono pos">${r.cy}</td>
+      <td class="mono">${r.ny}</td>
+      <td class="${cls}">${r.consensus}</td>
+      <td style="color:var(--ink3);font-size:12px;">${r.risk}</td>
+    </tr>`;
+  });
+  html += `</tbody></table>
+    <div style="padding:10px 16px;background:var(--bg3);border-top:1px solid var(--line);
+      font-family:var(--mono);font-size:10px;color:var(--ink3);line-height:1.7;">
+      <strong style="color:var(--ink2);">HOW TO UPDATE:</strong>
+      FY labels auto-update every April (Indian FY change) ·
+      Consensus figures in FORWARD_DATA array — update annually when sell-side revises ·
+      Currently showing: <strong style="color:var(--ink2);">${fy.cyFull}</strong>
+    </div>
+  </div>`;
+  el.innerHTML = html;
+}
+
+// ── ALERTS ────────────────────────────────────────────────────────────────────
+function renderAlerts() {
+  const warns = Object.values(D).filter(d => d.warn);
+  if (!warns.length) { document.getElementById('alert-wrap').innerHTML=''; return; }
+  let html = `<div class="sh"><span class="sh-label">⚠ ACTIVE WARNINGS — ${warns.length} INDICATORS IN WARNING ZONE</span>
+    <div class="sh-line"></div></div><div class="alert-strip">`;
+  warns.forEach(d => {
+    const ico = d.status==='danger'?'🔴':'🟡';
+    const tag = d.isLead ? `<span class="alert-tag bC">LEADING</span>` : '';
+    html += `<div class="alert-row"><span class="alert-ico">${ico}</span>
+      <span class="alert-text"><strong>${d.name} (${d.val}${d.unit})</strong>${tag} — ${d.warn}</span></div>`;
+  });
+  html += '</div>';
+  document.getElementById('alert-wrap').innerHTML = html;
+}
+
+// ── REGIME ────────────────────────────────────────────────────────────────────
+function updateTs() {
+  const n = new Date();
+  document.getElementById('ts').textContent =
+    n.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) +
+    ' · ' + n.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) + ' IST';
+}
+
+// ── CHART ─────────────────────────────────────────────────────────────────────
+function openChart(name) {
+  const d = Object.values(D).find(x => x.name===name);
+  if (!d?.hist) return;
+  if (activeChart===name) { closeChart(); return; }
+  activeChart = name;
+  renderAll();
+  const panel = document.getElementById('chart-panel');
+  document.getElementById('cp-title').textContent = d.name;
+  document.getElementById('cp-sub').textContent =
+    `${d.hist.l[0]} → ${d.hist.l[d.hist.l.length-1]} · Lead time: ${d.leadTime||'—'}`;
+  document.getElementById('cp-meta').innerHTML =
+    (d.bmarks||[]).map(b=>`<div class="cp-mi"><span class="cp-ml">${b.l}</span><span class="cp-mv">${b.v}</span></div>`).join('');
+  panel.classList.add('on');
+  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+  if (chartInst) { chartInst.destroy(); chartInst=null; }
+  const ctx = document.getElementById('mainChart').getContext('2d');
+  chartInst = new Chart(ctx, {
+    type:'line',
+    data:{ labels:d.hist.l, datasets:[{
+      label:d.name, data:d.hist.v,
+      borderColor:d.hist.c, backgroundColor:d.hist.c+'18',
+      borderWidth:2.5, pointRadius:4, pointBackgroundColor:d.hist.c,
+      fill:true, tension:0.35
+    }]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false},
+        tooltip:{backgroundColor:'#161b24',titleColor:'#6e7a94',
+          bodyColor:'#eef0f5',borderColor:'rgba(255,255,255,0.08)',
+          borderWidth:1, padding:10,
+          callbacks:{label:c=>`${c.parsed.y} ${d.unit}`}}},
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{color:'#6e7a94',font:{family:'IBM Plex Mono',size:10},maxRotation:45}},
+        y:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{color:'#6e7a94',font:{family:'IBM Plex Mono',size:10}}}
+      }}
+  });
+}
+function closeChart() {
+  activeChart = null;
+  document.getElementById('chart-panel').classList.remove('on');
+  renderAll();
+}
+
+// ── RENDER ALL ────────────────────────────────────────────────────────────────
+function renderAll() {
+  renderScores();
+  // Signal board
+  fill('sec-top-leads', ['yield_spread_india','credit_impulse','earnings_revision_ratio','nifty_fwd_pe',
+                         'rbi_liquidity','pmi_new_orders','ind_yield_spread_2','us_ism_new_orders']);
+  renderYieldCurve();
+  fill('sec-mkt-snap', ['nifty_200dma','adv_decline','pcr','fii_futures_oi']);
+  // Leading tab
+  fill('sec-credit-cycle', ['credit_impulse','bank_credit','rbi_liquidity','yield_spread_india']);
+  fill('sec-earnings-lead', ['earnings_revision_ratio','nifty_fwd_pe','eyspread','buffett']);
+  fill('sec-capex-lead',    ['capacity_util','pmi_new_orders','iip','gst']);
+  fill('sec-pmi-sub',       ['pmi_new_orders','pmi_india','pmi_us','us_ism_new_orders']);
+  fill('sec-global-lead',   ['us_yield_curve','ind_yield_spread_2','copper','gold']);
+  // India economy
+  fill('sec-growth',    ['gdp','iip','pmi_india','gst']);
+  fill('sec-inflation', ['cpi','cpi_food','repo','gsec']);
+  fill('sec-monetary',  ['repo','gsec','inrusd','rbi_liquidity']);
+  fill('sec-fiscal',    ['fiscal_def','gst','bank_credit','credit_impulse']);
+  fill('sec-employ',    ['cmie_unemp','eyspread','mf_cash_level','promoter_pledge']);
+  // Markets
+  fill('sec-valuation',   ['nifty_pe','nifty_pb','nifty_fwd_pe','buffett']);
+  fill('sec-breadth',     ['nifty_200dma','adv_decline','hi_lo_ratio','promoter_pledge']);
+  fill('sec-derivatives', ['pcr','fii_futures_oi','india_vix','mf_cash_level']);
+  // Flows
+  renderFlowTable(FII_ROWS,'FOREIGN INSTITUTIONAL INVESTORS (FII)','🌐','sec-fii');
+  renderFlowTable(DII_ROWS,'DOMESTIC INSTITUTIONAL INVESTORS (DII)','🏦','sec-dii');
+  fill('sec-fii-deriv',  ['fii_futures_oi','pcr','adv_decline','us_vix']);
+  fill('sec-external',   ['inrusd','ind_yield_spread_2','dxy','gold']);
+  // Global
+  fill('sec-us-cycle',   ['fed_rate','us10y','us_yield_curve','us_ism_new_orders']);
+  fill('sec-china',      ['pmi_us','copper','brent','dxy']);
+  fill('sec-commodities',['brent','gold','copper','inrusd','eyspread']);
+  fill('sec-risk',       ['us_vix','india_vix','gold','us_yield_curve']);
+  // Earnings
+  renderEarnings();
+  renderForward();
+  // Warnings
+  renderAlerts();
+
+  // Render US yield curve in global tab
+  const usYC = document.getElementById('sec-us-yc');
+  if (usYC) {
+    const us10_2 = (YIELD_CURVE.us[7].rate - YIELD_CURVE.us[3].rate).toFixed(2);
+    const clr = parseFloat(us10_2) < 0 ? 'var(--r)' : parseFloat(us10_2) < 0.5 ? 'var(--a)' : 'var(--g)';
+    usYC.innerHTML = `<div class="yc-card">
+      <div class="yc-title" style="display:flex;justify-content:space-between;">
+        <span>🇺🇸 US Treasury Yield Curve</span>
+        <span class="data-tag tag-lead">6–12M RECESSION PREDICTOR</span>
+      </div>
+      <div class="yc-grid" style="grid-template-columns:repeat(10,1fr);">
+        ${YIELD_CURVE.us.map(p=>{
+          const h=Math.max(6,Math.round((p.rate-3.5)/(5.5-3.5)*50));
+          const c=p.rate<4?'var(--b)':p.rate<4.5?'var(--g)':'var(--a)';
+          return `<div class="yc-node"><div class="yc-tenor">${p.tenor}</div>
+            <div class="yc-rate" style="color:${c};font-size:12px;">${p.rate}</div>
+            <div class="yc-bar"><div class="yc-bar-fill" style="height:${h}px;background:${c};opacity:0.7;"></div></div></div>`;
+        }).join('')}
+      </div>
+      <div class="yc-spread">
+        <div class="yc-sp-item"><span class="yc-sp-label">10Y−2Y spread</span>
+          <span class="yc-sp-val" style="color:${clr};">${us10_2}%</span>
+          <span style="font-family:var(--mono);font-size:10px;color:var(--ink3);margin-left:8px;">Recently returned from inversion — post-inversion phase, historically precedes recession by 6–18M</span>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  updateTs();
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function showTab(id) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('tab-'+id)?.classList.add('on');
+  event.currentTarget.classList.add('on');
+  closeChart();
+}
+
+// ── FETCH ─────────────────────────────────────────────────────────────────────
+async function runFetch() {
+  const btn = document.getElementById('fetch-btn');
+  btn.disabled = true; btn.textContent = '⚡ Loading...';
+  toast('Loading macro.json from GitHub...','info');
+  try {
+    const r = await fetch('data/macro.json?t='+Date.now());
+    if (r.ok) {
+      const live = await r.json();
+      const li   = live.indicators || {};
+      // Sanity bounds
+      // SANITY BOUNDS — hard limits per indicator
+      // INR/USD: 75–88 only. 94+ = EUR/INR mistake. Reject immediately.
+      const BOUNDS = {
+        inrusd:    [78, 105],  // USD/INR — currently ~94.9 (May 2026), allow up to 105
+        brent:     [30, 200],
+        crude_wti: [30, 200],
+        gold:      [1000, 5000],
+        silver:    [10, 200],
+        copper:    [1.5, 10],
+        fed_rate:  [0, 8],
+        us10y:     [0, 10],
+        repo:      [3, 9],
+        gsec:      [4, 12],
+        india_vix: [5, 80],
+        us_vix:    [5, 90],
+        dxy:       [80, 130],
+      };
+      Object.keys(li).forEach(k => {
+        if (!D[k]) return;
+        const l = li[k];
+        if (l.value !== undefined) {
+          const b = BOUNDS[k];
+          if (!b || (l.value >= b[0] && l.value <= b[1])) {
+            D[k].val = l.value;
+          } else {
+            // Special message for common INR/USD error
+            if (k === 'inrusd') {
+              console.warn(`INR/USD REJECTED: ${l.value} — outside expected range 78–105. Check source.`);
+            } else {
+              console.warn(`Sanity reject ${k}: ${l.value} (bounds: ${b[0]}–${b[1]})`);
+            }
+          }
+        }
+        if (l.status)       D[k].status = l.status;
+        if (l.badge)        D[k].badge  = l.badge;
+        if (l.change)       D[k].chg    = l.change;
+        if (l.dir)          D[k].dir    = l.dir;
+        if ('warning' in l) D[k].warn   = l.warning;
+        if (l.period)       D[k].period = l.period;
+        if (l.history?.labels?.length>2)
+          D[k].hist = {l:l.history.labels, v:l.history.values, c:D[k].hist?.c||'#4da6ff'};
+      });
+      // Update flows
+      const lf = live.flows || {};
+      if (lf.fii_net !== undefined) {
+        const fn = lf.fii_net, dn = lf.dii_net||0;
+        window._flowDate = lf.date || '';
+        FII_ROWS[0].daily = (fn>=0?'+':'')+'₹'+Math.abs(fn).toLocaleString('en-IN')+' Cr';
+        FII_ROWS[0].daily_n = fn; FII_ROWS[0].cls_d = fn>=0?'up':'dn';
+        DII_ROWS[0].daily = (dn>=0?'+':'')+'₹'+Math.abs(dn).toLocaleString('en-IN')+' Cr';
+        DII_ROWS[0].daily_n = dn; DII_ROWS[0].cls_d = dn>=0?'up':'dn';
+      }
+      // Update timestamp
+      if (live.updated_ist) document.getElementById('ts').textContent = live.updated_ist;
+      renderAll();
+      toast('✓ Data loaded from GitHub','success');
+    } else { throw new Error(`HTTP ${r.status}`); }
+  } catch(e) { toast('No live data — using static defaults','warn'); }
+  btn.disabled=false; btn.textContent='⚡ Fetch';
+}
+
+// ── AI ─────────────────────────────────────────────────────────────────────────
+async function runAI() {
+  const btn = document.getElementById('ai-btn');
+  const cont = document.getElementById('ai-content');
+  const chips = document.getElementById('ai-chips');
+  const keyEl = document.getElementById('groq-key');
+  const apiKey = (keyEl?.value || localStorage.getItem('groq_key')||'').trim();
+
+  if (!apiKey) {
+    cont.innerHTML = `<div class="ai-ph" style="color:var(--a);text-align:left;">
+⚠ Groq API key needed. Get free at console.groq.com → API Keys → Create (no credit card)
+Key starts with "gsk_..." · 14,400 free requests/day</div>`;
+    return;
+  }
+  btn.disabled=true; btn.textContent='Analysing...';
+  cont.innerHTML = `<div class="ai-ph"><span class="spin"></span> Reading ${Object.keys(D).length} indicators...</div>`;
+  chips.style.display='none';
+
+  const snap = [
+    '=== LEADING INDICATORS ===',
+    ...['yield_spread_india','credit_impulse','earnings_revision_ratio','nifty_fwd_pe',
+        'rbi_liquidity','capacity_util','pmi_new_orders','us_ism_new_orders',
+        'fii_futures_oi','pcr','adv_decline','nifty_200dma','hi_lo_ratio',
+        'us_yield_curve','ind_yield_spread_2','mf_cash_level','promoter_pledge']
+      .map(k=>D[k]?`${D[k].name}: ${D[k].val}${D[k].unit} [${D[k].badge}]${D[k].warn?' ⚠ '+D[k].warn:''}`:null).filter(Boolean),
+    '=== INDIA ECONOMY ===',
+    ...['gdp','cpi','repo','gsec','inrusd','gst','bank_credit','cmie_unemp']
+      .map(k=>D[k]?`${D[k].name}: ${D[k].val}${D[k].unit} [${D[k].badge}]`:null).filter(Boolean),
+    '=== MARKET VALUATION ===',
+    ...['nifty_pe','nifty_fwd_pe','nifty_pb','eyspread','buffett','india_vix']
+      .map(k=>D[k]?`${D[k].name}: ${D[k].val}${D[k].unit} [${D[k].badge}]`:null).filter(Boolean),
+    '=== GLOBAL ===',
+    ...['brent','gold','fed_rate','us10y','us_vix','dxy','copper','pmi_us']
+      .map(k=>D[k]?`${D[k].name}: ${D[k].val}${D[k].unit} [${D[k].badge}]${D[k].warn?' ⚠ '+D[k].warn:''}`:null).filter(Boolean),
+    `=== FII/DII === FII Equity MTD: ${FII_ROWS[0].mtd} | DII Total MTD: ${DII_ROWS[4].mtd} | SIP: ${DII_ROWS[2].mtd}`,
+    '=== COMPOSITE SCORES ===',
+    (() => { const s=computeScores(); return `Leading: ${s.leading}/100 | Coincident: ${s.coincident}/100 | Sentiment: ${s.sentiment}/100`; })(),
+    '=== FORWARD ESTIMATES ===',
+    'Nifty 50 FY27E EPS: ₹1,200 (+15.4% growth) | Nifty 50 FY27 Fwd P/E: 17.8x | IT USD Rev FY27E: +8.2% | Capex/Infra FY27E: +22.1%',
+  ].join('\n');
+
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},
+      body: JSON.stringify({
+        model:'llama-3.3-70b-versatile',
+        temperature:0.35, max_tokens:1400,
+        messages:[
+          {role:'system', content:`You are the Chief Investment Strategist at India's top equity fund (₹50,000 Cr AUM). You specialise in using leading macro indicators to predict equity market direction 1–3 quarters ahead. You give sharp, number-specific, actionable calls. You never hedge excessively.`},
+          {role:'user', content:`Analyse this live dashboard snapshot and deliver a complete investment signal brief.
+
+${snap}
+
+RESPOND IN EXACTLY THIS STRUCTURE. Be specific. Use numbers. No preamble.
+
+LEADING INDICATOR VERDICT: [What are the leading indicators collectively saying about the next 2–3 quarters?]
+
+TOP 3 EARLY WARNINGS:
+• [Specific leading indicator + value + what it is predicting]
+• [Specific leading indicator + value + what it is predicting]
+• [Specific leading indicator + value + what it is predicting]
+
+EARNINGS CYCLE READ: [Based on revision ratio, forward P/E, credit impulse — where are we in the earnings cycle?]
+
+SECTOR ROTATION BASED ON LEADING INDICATORS:
+• ACCUMULATE: [2–3 sectors — specific macro reason from leading data above]
+• REDUCE: [1–2 sectors — specific reason]
+• WATCH (inflecting): [1 sector about to turn]
+
+GLOBAL RISK FOR INDIA (next quarter): [Top 2 global signals and their India equity impact]
+
+INVESTMENT SIGNAL — BUY / HOLD / REDUCE: [Exactly one word] — [One crisp reason]
+
+TRIGGERS TO WATCH: [2 specific data releases in next 30 days that could change the call]`}
+        ]
+      })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    const text = data?.choices?.[0]?.message?.content || 'No response.';
+    cont.innerHTML = `<div class="ai-content">${
+      text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+          .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+          .replace(/\n/g,'<br>')
+    }</div>`;
+    const m = text.match(/INVESTMENT SIGNAL[^:]*:\s*(BUY|HOLD|REDUCE)/i);
+    if (m) {
+      const s = m[1].toUpperCase();
+      const cls = s==='BUY'?'achip-buy':s==='REDUCE'?'achip-sell':'achip-hold';
+      chips.innerHTML = `<span class="achip ${cls}">◉ ${s}</span>
+        <span class="achip achip-neu">Groq · ${data.model||'llama-3.3-70b'}</span>
+        <span class="achip achip-neu">${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})} IST</span>`;
+      chips.style.display='flex';
+    }
+    toast('✓ Signal analysis complete','success');
+  } catch(e) {
+    cont.innerHTML=`<div class="ai-ph" style="color:var(--r);">Error: ${e.message}</div>`;
+    toast('Groq error — check key','error');
+  }
+  btn.disabled=false; btn.textContent='▶ Analyse';
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+function toast(msg, type='info') {
+  const t = document.getElementById('toast');
+  const c = {info:'background:#161b24;border:1px solid var(--b);color:var(--ink2);',
+             success:'background:#0a1a12;border:1px solid var(--g);color:var(--g);',
+             warn:'background:#1a1400;border:1px solid var(--a);color:var(--a);',
+             error:'background:#1a0808;border:1px solid var(--r);color:var(--r);'};
+  t.style.cssText += c[type]||c.info;
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+const saved = localStorage.getItem('groq_key');
+if (saved) { const el=document.getElementById('groq-key'); if(el) el.value=saved; }
+renderAll();
+runFetch();
+setInterval(()=>{ if(!document.hidden) runFetch(); }, 30*60*1000);
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) runFetch(); });
+</script>
+</body>
+</html>
