@@ -1,6 +1,6 @@
 {
-  "updated": "2026-07-04T06:34:31Z",
-  "updated_ist": "04 Jul 2026 \u00b7 12:04 IST",
+  "updated": "2026-07-04T11:16:59Z",
+  "updated_ist": "04 Jul 2026 \u00b7 16:46 IST",
   "version": "3.1",
   "indicators": {
     "gdp": {
@@ -2061,7 +2061,7 @@
   },
   "flows": {
     "date": "04 Jul 2026",
-    "updated": "2026-07-04T06:34:38Z",
+    "updated": "2026-07-04T11:17:05Z",
     "categories": [
       {
         "category": "DII",
@@ -2098,11 +2098,6 @@
     "CHN": {
       "name": "China",
       "value": 4.96,
-      "year": "2025"
-    },
-    "USA": {
-      "name": "USA",
-      "value": 2.16,
       "year": "2025"
     },
     "EMU": {
