@@ -1,6 +1,6 @@
 {
-  "updated": "2026-09-05T07:49:07Z",
-  "updated_ist": "05 Sep 2026 \u00b7 13:19 IST",
+  "updated": "2026-09-05T13:05:38Z",
+  "updated_ist": "05 Sep 2026 \u00b7 18:35 IST",
   "version": "3.1",
   "indicators": {
     "gdp": {
@@ -2061,7 +2061,7 @@
   },
   "flows": {
     "date": "05 Sep 2026",
-    "updated": "2026-09-05T07:49:21Z",
+    "updated": "2026-09-05T13:05:44Z",
     "categories": [
       {
         "category": "DII",
