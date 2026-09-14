@@ -1,6 +1,6 @@
 {
-  "updated": "2026-09-14T09:11:21Z",
-  "updated_ist": "14 Sep 2026 \u00b7 14:41 IST",
+  "updated": "2026-09-14T16:02:29Z",
+  "updated_ist": "14 Sep 2026 \u00b7 21:32 IST",
   "version": "3.1",
   "indicators": {
     "gdp": {
@@ -217,13 +217,13 @@
       "warning": "US 10Y 4.95% \u2014 FII outflow pressure on India"
     },
     "us_vix": {
-      "value": 17.8,
+      "value": 15.8,
       "unit": "",
       "period": "14 Sep 2026",
       "label": "VIX (US Fear Index)",
       "status": "good",
       "badge": "CALM",
-      "change": "US VIX: 17.8",
+      "change": "US VIX: 15.8",
       "dir": "fl",
       "warning": null
     },
@@ -2061,7 +2061,7 @@
   },
   "flows": {
     "date": "14 Sep 2026",
-    "updated": "2026-09-14T09:11:27Z",
+    "updated": "2026-09-14T16:02:36Z",
     "categories": [
       {
         "category": "DII",
