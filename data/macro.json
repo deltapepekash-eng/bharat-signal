@@ -1,6 +1,6 @@
 {
-  "updated": "2026-10-02T09:59:00Z",
-  "updated_ist": "02 Oct 2026 \u00b7 15:29 IST",
+  "updated": "2026-10-02T16:00:49Z",
+  "updated_ist": "02 Oct 2026 \u00b7 21:30 IST",
   "version": "3.1",
   "indicators": {
     "gdp": {
@@ -15,6 +15,11 @@
       "warning": null,
       "history": {
         "labels": [
+          "2016",
+          "2017",
+          "2018",
+          "2019",
+          "2020",
           "2021",
           "2022",
           "2023",
@@ -22,6 +27,11 @@
           "2025"
         ],
         "values": [
+          8.26,
+          6.8,
+          6.45,
+          3.87,
+          -5.78,
           9.69,
           7.61,
           7.21,
@@ -185,15 +195,15 @@
       "warning": null
     },
     "fed_rate": {
-      "value": 3.75,
+      "value": 4.375,
       "unit": "%",
       "period": "02 Oct 2026",
       "label": "Fed Funds Rate",
-      "status": "good",
-      "badge": "NEUTRAL",
+      "status": "warn",
+      "badge": "RESTRICTIVE",
       "change": "On hold",
       "dir": "fl",
-      "warning": null
+      "warning": "Fed at 4.375% \u2014 limits RBI cut room"
     },
     "us10y": {
       "value": 5.29,
@@ -207,35 +217,35 @@
       "warning": "US 10Y 5.29% \u2014 FII outflow pressure on India"
     },
     "us_vix": {
-      "value": 16.3,
+      "value": 16.4,
       "unit": "",
       "period": "02 Oct 2026",
       "label": "VIX (US Fear Index)",
       "status": "good",
       "badge": "CALM",
-      "change": "US VIX: 16.3",
+      "change": "US VIX: 16.4",
       "dir": "fl",
       "warning": null
     },
     "us_nfp": {
-      "value": 162.0,
+      "value": 29.0,
       "unit": "K",
       "period": "02 Oct 2026",
       "label": "US Non-Farm Payrolls (Monthly)",
-      "status": "good",
-      "badge": "SOLID",
-      "change": "+162K jobs added",
+      "status": "danger",
+      "badge": "WEAK",
+      "change": "+29K jobs added",
       "dir": "fl",
-      "warning": null
+      "warning": "NFP fell to 29K \u2014 labor market weakening"
     },
     "us_unemp": {
-      "value": 4.1,
+      "value": 4.2,
       "unit": "%",
       "period": "02 Oct 2026",
       "label": "US Unemployment Rate",
       "status": "good",
       "badge": "FULL EMPLOYMENT",
-      "change": "4.1%",
+      "change": "4.2%",
       "dir": "fl",
       "warning": null
     }
@@ -2051,7 +2061,7 @@
   },
   "flows": {
     "date": "02 Oct 2026",
-    "updated": "2026-10-02T09:59:06Z",
+    "updated": "2026-10-02T16:00:54Z",
     "categories": [
       {
         "category": "DII",
@@ -2116,6 +2126,6 @@
       "year": "2025"
     }
   },
-  "regime_score": 92,
+  "regime_score": 85,
   "regime": "RISK-ON"
 }
