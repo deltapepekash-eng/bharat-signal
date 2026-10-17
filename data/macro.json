@@ -1,16 +1,16 @@
 {
-  "updated": "2026-10-17T07:58:39Z",
-  "updated_ist": "17 Oct 2026 \u00b7 13:28 IST",
+  "updated": "2026-10-17T13:20:36Z",
+  "updated_ist": "17 Oct 2026 \u00b7 18:50 IST",
   "version": "3.1",
   "indicators": {
     "gdp": {
-      "value": 6.4,
+      "value": 7.57,
       "unit": "%",
-      "period": "FY25",
+      "period": "2025",
       "label": "GDP Growth (YoY)",
       "status": "good",
-      "badge": "NORMAL",
-      "change": "6.4% YoY",
+      "badge": "STRONG",
+      "change": "7.57% YoY",
       "dir": "up",
       "warning": null,
       "history": {
@@ -41,9 +41,9 @@
       }
     },
     "cpi": {
-      "value": 4.6,
+      "value": 2.4,
       "unit": "%",
-      "period": "Latest",
+      "period": "2025",
       "label": "CPI Inflation (Headline)",
       "status": "good",
       "badge": "IN BAND",
@@ -2061,7 +2061,7 @@
   },
   "flows": {
     "date": "17 Oct 2026",
-    "updated": "2026-10-17T07:58:46Z",
+    "updated": "2026-10-17T13:20:42Z",
     "categories": [
       {
         "category": "DII",
@@ -2090,6 +2090,21 @@
     }
   },
   "world_gdp": {
+    "IND": {
+      "name": "India",
+      "value": 7.57,
+      "year": "2025"
+    },
+    "CHN": {
+      "name": "China",
+      "value": 4.96,
+      "year": "2025"
+    },
+    "USA": {
+      "name": "USA",
+      "value": 2.16,
+      "year": "2025"
+    },
     "EMU": {
       "name": "Eurozone",
       "value": 1.41,
@@ -2098,6 +2113,16 @@
     "JPN": {
       "name": "Japan",
       "value": 1.19,
+      "year": "2025"
+    },
+    "GBR": {
+      "name": "UK",
+      "value": 1.39,
+      "year": "2025"
+    },
+    "WLD": {
+      "name": "World",
+      "value": 2.92,
       "year": "2025"
     }
   },
