@@ -1,6 +1,6 @@
 {
-  "updated": "2026-11-10T11:33:05Z",
-  "updated_ist": "10 Nov 2026 \u00b7 17:03 IST",
+  "updated": "2026-11-10T17:21:38Z",
+  "updated_ist": "10 Nov 2026 \u00b7 22:51 IST",
   "version": "3.1",
   "indicators": {
     "gdp": {
@@ -217,15 +217,15 @@
       "warning": "US 10Y 4.86% \u2014 FII outflow pressure on India"
     },
     "us_vix": {
-      "value": 25.6,
+      "value": 19.9,
       "unit": "",
       "period": "10 Nov 2026",
       "label": "VIX (US Fear Index)",
-      "status": "warn",
-      "badge": "ELEVATED",
-      "change": "US VIX: 25.6",
+      "status": "good",
+      "badge": "CALM",
+      "change": "US VIX: 19.9",
       "dir": "fl",
-      "warning": "US VIX 25.6 \u2014 risk-off, FII selling likely"
+      "warning": null
     },
     "us_nfp": {
       "value": 165.0,
@@ -2061,7 +2061,7 @@
   },
   "flows": {
     "date": "10 Nov 2026",
-    "updated": "2026-11-10T11:33:10Z",
+    "updated": "2026-11-10T17:21:43Z",
     "categories": [
       {
         "category": "DII",
@@ -2095,9 +2095,24 @@
       "value": 7.57,
       "year": "2025"
     },
+    "CHN": {
+      "name": "China",
+      "value": 4.96,
+      "year": "2025"
+    },
+    "USA": {
+      "name": "USA",
+      "value": 2.16,
+      "year": "2025"
+    },
     "EMU": {
       "name": "Eurozone",
       "value": 1.41,
+      "year": "2025"
+    },
+    "JPN": {
+      "name": "Japan",
+      "value": 1.19,
       "year": "2025"
     },
     "GBR": {
@@ -2111,6 +2126,6 @@
       "year": "2025"
     }
   },
-  "regime_score": 90,
+  "regime_score": 92,
   "regime": "RISK-ON"
 }
